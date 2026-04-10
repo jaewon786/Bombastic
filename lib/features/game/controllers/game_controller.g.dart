@@ -15,20 +15,25 @@ final activeBombProvider = ActiveBombProvider._();
 
 /// 현재 활성 폭탄 실시간 스트림
 
-final class ActiveBombProvider extends $FunctionalProvider<
-        AsyncValue<BombModel?>, BombModel?, Stream<BombModel?>>
+final class ActiveBombProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<BombModel?>,
+          BombModel?,
+          Stream<BombModel?>
+        >
     with $FutureModifier<BombModel?>, $StreamProvider<BombModel?> {
   /// 현재 활성 폭탄 실시간 스트림
   ActiveBombProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'activeBombProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'activeBombProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$activeBombHash();
@@ -57,15 +62,15 @@ final class IsMyTurnProvider extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
   /// 내 차례인지 여부
   IsMyTurnProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'isMyTurnProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'isMyTurnProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$isMyTurnHash();
@@ -97,15 +102,15 @@ final gameControllerProvider = GameControllerProvider._();
 final class GameControllerProvider
     extends $NotifierProvider<GameController, AsyncValue<void>> {
   GameControllerProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'gameControllerProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'gameControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$gameControllerHash();
@@ -131,11 +136,14 @@ abstract class _$GameController extends $Notifier<AsyncValue<void>> {
   @override
   void runBuild() {
     final ref = this.ref as $Ref<AsyncValue<void>, AsyncValue<void>>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<AsyncValue<void>, AsyncValue<void>>,
-        AsyncValue<void>,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<void>, AsyncValue<void>>,
+              AsyncValue<void>,
+              Object?,
+              Object?
+            >;
     element.handleCreate(ref, build);
   }
 }

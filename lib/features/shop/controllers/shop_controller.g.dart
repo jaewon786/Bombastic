@@ -15,24 +15,27 @@ final shopItemsProvider = ShopItemsProvider._();
 
 /// 상점 아이템 목록
 
-final class ShopItemsProvider extends $FunctionalProvider<
-        AsyncValue<List<ShopItemModel>>,
-        List<ShopItemModel>,
-        FutureOr<List<ShopItemModel>>>
+final class ShopItemsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<ShopItemModel>>,
+          List<ShopItemModel>,
+          FutureOr<List<ShopItemModel>>
+        >
     with
         $FutureModifier<List<ShopItemModel>>,
         $FutureProvider<List<ShopItemModel>> {
   /// 상점 아이템 목록
   ShopItemsProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'shopItemsProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'shopItemsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$shopItemsHash();
@@ -40,8 +43,8 @@ final class ShopItemsProvider extends $FunctionalProvider<
   @$internal
   @override
   $FutureProviderElement<List<ShopItemModel>> $createElement(
-          $ProviderPointer pointer) =>
-      $FutureProviderElement(pointer);
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
   @override
   FutureOr<List<ShopItemModel>> create(Ref ref) {
@@ -57,15 +60,15 @@ final shopControllerProvider = ShopControllerProvider._();
 final class ShopControllerProvider
     extends $NotifierProvider<ShopController, AsyncValue<void>> {
   ShopControllerProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'shopControllerProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'shopControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$shopControllerHash();
@@ -91,11 +94,14 @@ abstract class _$ShopController extends $Notifier<AsyncValue<void>> {
   @override
   void runBuild() {
     final ref = this.ref as $Ref<AsyncValue<void>, AsyncValue<void>>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<AsyncValue<void>, AsyncValue<void>>,
-        AsyncValue<void>,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<void>, AsyncValue<void>>,
+              AsyncValue<void>,
+              Object?,
+              Object?
+            >;
     element.handleCreate(ref, build);
   }
 }

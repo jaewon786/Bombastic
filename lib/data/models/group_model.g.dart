@@ -7,20 +7,20 @@ part of 'group_model.dart';
 // **************************************************************************
 
 _GroupModel _$GroupModelFromJson(Map<String, dynamic> json) => _GroupModel(
-      id: json['id'] as String,
-      joinCode: json['joinCode'] as String,
-      memberUids: (json['memberUids'] as List<dynamic>)
-          .map((e) => e as String)
-          .toList(),
-      status: $enumDecode(_$GroupStatusEnumMap, json['status']),
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      gameStartedAt: json['gameStartedAt'] == null
-          ? null
-          : DateTime.parse(json['gameStartedAt'] as String),
-      gameEndedAt: json['gameEndedAt'] == null
-          ? null
-          : DateTime.parse(json['gameEndedAt'] as String),
-    );
+  id: json['id'] as String,
+  joinCode: json['joinCode'] as String,
+  memberUids: (json['memberUids'] as List<dynamic>)
+      .map((e) => e as String)
+      .toList(),
+  status: $enumDecode(_$GroupStatusEnumMap, json['status']),
+  createdAt: DateTime.parse(json['createdAt'] as String),
+  gameStartedAt: json['gameStartedAt'] == null
+      ? null
+      : DateTime.parse(json['gameStartedAt'] as String),
+  gameEndedAt: json['gameEndedAt'] == null
+      ? null
+      : DateTime.parse(json['gameEndedAt'] as String),
+);
 
 Map<String, dynamic> _$GroupModelToJson(_GroupModel instance) =>
     <String, dynamic>{

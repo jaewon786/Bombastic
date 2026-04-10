@@ -7,18 +7,19 @@ part of 'user_model.dart';
 // **************************************************************************
 
 _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
-      uid: json['uid'] as String,
-      displayName: json['displayName'] as String,
-      currency: (json['currency'] as num?)?.toInt() ?? 0,
-      ownedItemIds: (json['ownedItemIds'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          const [],
-      currentGroupId: json['currentGroupId'] as String?,
-      lastCheckInDate: json['lastCheckInDate'] == null
-          ? null
-          : DateTime.parse(json['lastCheckInDate'] as String),
-    );
+  uid: json['uid'] as String,
+  displayName: json['displayName'] as String,
+  currency: (json['currency'] as num?)?.toInt() ?? 0,
+  ownedItemIds:
+      (json['ownedItemIds'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  currentGroupId: json['currentGroupId'] as String?,
+  lastCheckInDate: json['lastCheckInDate'] == null
+      ? null
+      : DateTime.parse(json['lastCheckInDate'] as String),
+);
 
 Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
     <String, dynamic>{

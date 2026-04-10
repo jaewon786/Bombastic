@@ -15,24 +15,27 @@ final missionsProvider = MissionsProvider._();
 
 /// 미션 목록
 
-final class MissionsProvider extends $FunctionalProvider<
-        AsyncValue<List<MissionModel>>,
-        List<MissionModel>,
-        FutureOr<List<MissionModel>>>
+final class MissionsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<MissionModel>>,
+          List<MissionModel>,
+          FutureOr<List<MissionModel>>
+        >
     with
         $FutureModifier<List<MissionModel>>,
         $FutureProvider<List<MissionModel>> {
   /// 미션 목록
   MissionsProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'missionsProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'missionsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$missionsHash();
@@ -40,8 +43,8 @@ final class MissionsProvider extends $FunctionalProvider<
   @$internal
   @override
   $FutureProviderElement<List<MissionModel>> $createElement(
-          $ProviderPointer pointer) =>
-      $FutureProviderElement(pointer);
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
   @override
   FutureOr<List<MissionModel>> create(Ref ref) {
@@ -57,15 +60,15 @@ final missionControllerProvider = MissionControllerProvider._();
 final class MissionControllerProvider
     extends $NotifierProvider<MissionController, AsyncValue<void>> {
   MissionControllerProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'missionControllerProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'missionControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$missionControllerHash();
@@ -91,11 +94,14 @@ abstract class _$MissionController extends $Notifier<AsyncValue<void>> {
   @override
   void runBuild() {
     final ref = this.ref as $Ref<AsyncValue<void>, AsyncValue<void>>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<AsyncValue<void>, AsyncValue<void>>,
-        AsyncValue<void>,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<void>, AsyncValue<void>>,
+              AsyncValue<void>,
+              Object?,
+              Object?
+            >;
     element.handleCreate(ref, build);
   }
 }

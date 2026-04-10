@@ -15,20 +15,25 @@ final gameResultProvider = GameResultProvider._();
 
 /// 게임 결과 계산 (폭발 기록 기반)
 
-final class GameResultProvider extends $FunctionalProvider<
-        AsyncValue<GameResultModel>, GameResultModel, FutureOr<GameResultModel>>
+final class GameResultProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<GameResultModel>,
+          GameResultModel,
+          FutureOr<GameResultModel>
+        >
     with $FutureModifier<GameResultModel>, $FutureProvider<GameResultModel> {
   /// 게임 결과 계산 (폭발 기록 기반)
   GameResultProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'gameResultProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'gameResultProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$gameResultHash();
@@ -36,8 +41,8 @@ final class GameResultProvider extends $FunctionalProvider<
   @$internal
   @override
   $FutureProviderElement<GameResultModel> $createElement(
-          $ProviderPointer pointer) =>
-      $FutureProviderElement(pointer);
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
   @override
   FutureOr<GameResultModel> create(Ref ref) {
@@ -53,15 +58,15 @@ final resultControllerProvider = ResultControllerProvider._();
 final class ResultControllerProvider
     extends $NotifierProvider<ResultController, AsyncValue<void>> {
   ResultControllerProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'resultControllerProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'resultControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$resultControllerHash();
@@ -87,11 +92,14 @@ abstract class _$ResultController extends $Notifier<AsyncValue<void>> {
   @override
   void runBuild() {
     final ref = this.ref as $Ref<AsyncValue<void>, AsyncValue<void>>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<AsyncValue<void>, AsyncValue<void>>,
-        AsyncValue<void>,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<void>, AsyncValue<void>>,
+              AsyncValue<void>,
+              Object?,
+              Object?
+            >;
     element.handleCreate(ref, build);
   }
 }

@@ -16,15 +16,15 @@ final class ShopRepositoryProvider
     extends $FunctionalProvider<ShopRepository, ShopRepository, ShopRepository>
     with $Provider<ShopRepository> {
   ShopRepositoryProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'shopRepositoryProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'shopRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$shopRepositoryHash();

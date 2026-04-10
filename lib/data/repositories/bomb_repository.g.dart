@@ -16,15 +16,15 @@ final class BombRepositoryProvider
     extends $FunctionalProvider<BombRepository, BombRepository, BombRepository>
     with $Provider<BombRepository> {
   BombRepositoryProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'bombRepositoryProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'bombRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$bombRepositoryHash();

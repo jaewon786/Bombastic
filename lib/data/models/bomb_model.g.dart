@@ -7,15 +7,15 @@ part of 'bomb_model.dart';
 // **************************************************************************
 
 _BombModel _$BombModelFromJson(Map<String, dynamic> json) => _BombModel(
-      id: json['id'] as String,
-      groupId: json['groupId'] as String,
-      holderUid: json['holderUid'] as String,
-      receivedAt: DateTime.parse(json['receivedAt'] as String),
-      expiresAt: DateTime.parse(json['expiresAt'] as String),
-      status: $enumDecode(_$BombStatusEnumMap, json['status']),
-      round: (json['round'] as num?)?.toInt() ?? 0,
-      explodedUid: json['explodedUid'] as String?,
-    );
+  id: json['id'] as String,
+  groupId: json['groupId'] as String,
+  holderUid: json['holderUid'] as String,
+  receivedAt: DateTime.parse(json['receivedAt'] as String),
+  expiresAt: DateTime.parse(json['expiresAt'] as String),
+  status: $enumDecode(_$BombStatusEnumMap, json['status']),
+  round: (json['round'] as num?)?.toInt() ?? 0,
+  explodedUid: json['explodedUid'] as String?,
+);
 
 Map<String, dynamic> _$BombModelToJson(_BombModel instance) =>
     <String, dynamic>{

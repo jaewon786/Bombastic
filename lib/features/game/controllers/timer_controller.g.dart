@@ -18,19 +18,20 @@ final bombTimerProvider = BombTimerProvider._();
 /// activeBomb의 expiresAt 기준으로 1초마다 갱신
 
 final class BombTimerProvider
-    extends $FunctionalProvider<String, String, String> with $Provider<String> {
+    extends $FunctionalProvider<String, String, String>
+    with $Provider<String> {
   /// 폭탄 남은 시간을 HH:MM:SS 문자열로 제공하는 provider
   /// activeBomb의 expiresAt 기준으로 1초마다 갱신
   BombTimerProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'bombTimerProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'bombTimerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$bombTimerHash();

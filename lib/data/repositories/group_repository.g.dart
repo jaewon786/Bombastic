@@ -12,18 +12,20 @@ part of 'group_repository.dart';
 @ProviderFor(groupRepository)
 final groupRepositoryProvider = GroupRepositoryProvider._();
 
-final class GroupRepositoryProvider extends $FunctionalProvider<GroupRepository,
-    GroupRepository, GroupRepository> with $Provider<GroupRepository> {
+final class GroupRepositoryProvider
+    extends
+        $FunctionalProvider<GroupRepository, GroupRepository, GroupRepository>
+    with $Provider<GroupRepository> {
   GroupRepositoryProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'groupRepositoryProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'groupRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$groupRepositoryHash();

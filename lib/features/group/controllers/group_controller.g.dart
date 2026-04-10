@@ -15,20 +15,25 @@ final currentGroupProvider = CurrentGroupProvider._();
 
 /// 현재 유저가 속한 그룹 실시간 스트림
 
-final class CurrentGroupProvider extends $FunctionalProvider<
-        AsyncValue<GroupModel?>, GroupModel?, Stream<GroupModel?>>
+final class CurrentGroupProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<GroupModel?>,
+          GroupModel?,
+          Stream<GroupModel?>
+        >
     with $FutureModifier<GroupModel?>, $StreamProvider<GroupModel?> {
   /// 현재 유저가 속한 그룹 실시간 스트림
   CurrentGroupProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'currentGroupProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'currentGroupProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$currentGroupHash();
@@ -36,8 +41,8 @@ final class CurrentGroupProvider extends $FunctionalProvider<
   @$internal
   @override
   $StreamProviderElement<GroupModel?> $createElement(
-          $ProviderPointer pointer) =>
-      $StreamProviderElement(pointer);
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
 
   @override
   Stream<GroupModel?> create(Ref ref) {
@@ -53,15 +58,15 @@ final groupControllerProvider = GroupControllerProvider._();
 final class GroupControllerProvider
     extends $NotifierProvider<GroupController, AsyncValue<void>> {
   GroupControllerProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'groupControllerProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'groupControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$groupControllerHash();
@@ -87,11 +92,14 @@ abstract class _$GroupController extends $Notifier<AsyncValue<void>> {
   @override
   void runBuild() {
     final ref = this.ref as $Ref<AsyncValue<void>, AsyncValue<void>>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<AsyncValue<void>, AsyncValue<void>>,
-        AsyncValue<void>,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<void>, AsyncValue<void>>,
+              AsyncValue<void>,
+              Object?,
+              Object?
+            >;
     element.handleCreate(ref, build);
   }
 }

@@ -12,20 +12,24 @@ part of 'mission_repository.dart';
 @ProviderFor(missionRepository)
 final missionRepositoryProvider = MissionRepositoryProvider._();
 
-final class MissionRepositoryProvider extends $FunctionalProvider<
-    MissionRepository,
-    MissionRepository,
-    MissionRepository> with $Provider<MissionRepository> {
+final class MissionRepositoryProvider
+    extends
+        $FunctionalProvider<
+          MissionRepository,
+          MissionRepository,
+          MissionRepository
+        >
+    with $Provider<MissionRepository> {
   MissionRepositoryProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'missionRepositoryProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'missionRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$missionRepositoryHash();
@@ -33,8 +37,8 @@ final class MissionRepositoryProvider extends $FunctionalProvider<
   @$internal
   @override
   $ProviderElement<MissionRepository> $createElement(
-          $ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
 
   @override
   MissionRepository create(Ref ref) {
