@@ -171,11 +171,9 @@ class _WaitingView extends ConsumerWidget {
                   onPressed: group.memberUids.length >= 2
                       ? () async {
                           try {
-                            await callHttpsCallableWithRegionFallback(
-                              ref,
-                              functionName: 'startGame',
-                              data: {'groupId': group.id},
-                            );
+                            await ref
+                                .read(gameControllerProvider.notifier)
+                                .startGame(groupId: group.id);
                           } catch (e) {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(

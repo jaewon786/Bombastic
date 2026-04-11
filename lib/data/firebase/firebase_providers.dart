@@ -7,6 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../repositories/user_repository.dart';
 
+const _preferredFunctionsRegion = 'asia-northeast3';
+const _fallbackFunctionsRegions = ['us-central1'];
+
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
 });
@@ -16,11 +19,11 @@ final firestoreProvider = Provider<FirebaseFirestore>((ref) {
 });
 
 final preferredFunctionsRegionProvider = Provider<String>((ref) {
-  return 'asia-northeast3';
+  return _preferredFunctionsRegion;
 });
 
 final fallbackFunctionsRegionsProvider = Provider<List<String>>((ref) {
-  return const ['us-central1'];
+  return _fallbackFunctionsRegions;
 });
 
 final functionsProvider = Provider<FirebaseFunctions>((ref) {
@@ -29,12 +32,12 @@ final functionsProvider = Provider<FirebaseFunctions>((ref) {
 });
 
 Future<HttpsCallableResult<dynamic>> callHttpsCallableWithRegionFallback(
-  Ref ref, {
+{
   required String functionName,
   Object? data,
 }) async {
-  final preferredRegion = ref.read(preferredFunctionsRegionProvider);
-  final fallbackRegions = ref.read(fallbackFunctionsRegionsProvider);
+  const preferredRegion = _preferredFunctionsRegion;
+  const fallbackRegions = _fallbackFunctionsRegions;
   final regions = <String>{preferredRegion, ...fallbackRegions}.toList();
 
   for (final region in regions) {

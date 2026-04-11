@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -27,6 +29,76 @@ bool isMyTurn(Ref ref, String groupId) {
 class GameController extends _$GameController {
   @override
   AsyncValue<void> build() => const AsyncData(null);
+
+  /// 게임 시작 (Cloud Function 우선, 미배포 시 Firestore fallback)
+  Future<void> startGame({required String groupId}) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      try {
+        await callHttpsCallableWithRegionFallback(
+          functionName: 'startGame',
+          data: {'groupId': groupId},
+        );
+        return;
+      } catch (e) {
+        final isFunctionNotFound =
+            e is StateError ||
+            (e is FirebaseFunctionsException && e.code == 'not-found');
+        if (!isFunctionNotFound) rethrow;
+      }
+
+      final uid = ref.read(currentUidProvider);
+      if (uid == null) throw Exception('로그인이 필요합니다.');
+
+      final firestore = ref.read(firestoreProvider);
+      final groupRef = firestore.collection('groups').doc(groupId);
+
+      await firestore.runTransaction((tx) async {
+        final groupSnap = await tx.get(groupRef);
+        if (!groupSnap.exists || groupSnap.data() == null) {
+          throw StateError('그룹을 찾을 수 없습니다.');
+        }
+
+        final group = groupSnap.data()!;
+        final memberUids =
+            List<String>.from(group['memberUids'] as List<dynamic>? ?? const []);
+        final status = group['status'] as String? ?? 'waiting';
+
+        if (memberUids.isEmpty || memberUids.first != uid) {
+          throw StateError('방장만 게임을 시작할 수 있습니다.');
+        }
+        if (status != 'waiting') {
+          throw StateError('이미 시작된 게임입니다.');
+        }
+        if (memberUids.length < AppConstants.minGroupSize) {
+          throw StateError('최소 2명이 필요합니다.');
+        }
+
+        final now = Timestamp.now();
+        final expiresAt = Timestamp.fromMillisecondsSinceEpoch(
+          now.millisecondsSinceEpoch +
+              AppConstants.defaultBombDurationSeconds * 1000,
+        );
+        final bombRef = groupRef.collection('bombs').doc();
+
+        tx.set(bombRef, {
+          'id': bombRef.id,
+          'groupId': groupId,
+          'holderUid': memberUids.first,
+          'receivedAt': now,
+          'expiresAt': expiresAt,
+          'status': BombStatus.active.name,
+          'round': 1,
+          'explodedUid': null,
+        });
+
+        tx.update(groupRef, {
+          'status': 'playing',
+          'gameStartedAt': now,
+        });
+      });
+    });
+  }
 
   /// 폭탄을 다음 사람에게 전달
   Future<void> passBomb({
@@ -79,7 +151,6 @@ class GameController extends _$GameController {
       final data = <String, dynamic>{'groupId': groupId, 'itemId': itemId};
       if (days != null) data['days'] = days;
       await callHttpsCallableWithRegionFallback(
-        ref,
         functionName: 'useItem',
         data: data,
       );
