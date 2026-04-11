@@ -3,15 +3,28 @@ import * as admin from 'firebase-admin';
 /**
  * Firestore shopItems 컬렉션 초기 데이터 시드 스크립트.
  *
- * 실행 방법:
+ * 실행 방법 A — 에뮬레이터:
+ *   firebase emulators:start --only firestore
  *   npx ts-node src/seeds/seedShopItems.ts
  *
- * 사전 조건:
- *   - GOOGLE_APPLICATION_CREDENTIALS 환경변수에 서비스 계정 키 경로 설정
- *     또는 Firebase 에뮬레이터 환경에서 실행
+ * 실행 방법 B — 실 Firestore:
+ *   set GOOGLE_APPLICATION_CREDENTIALS=<서비스 계정 키 JSON 경로>
+ *   npx ts-node src/seeds/seedShopItems.ts
  */
 
-admin.initializeApp();
+const PROJECT_ID = process.env.GCLOUD_PROJECT ?? 'likelion-holycow';
+const useEmulator = process.argv.includes('--emulator');
+
+if (useEmulator) {
+  process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
+  console.log('에뮬레이터 모드: localhost:8080');
+} else {
+  // 시스템에 남아있는 에뮬레이터 환경변수가 있으면 제거
+  delete process.env.FIRESTORE_EMULATOR_HOST;
+  console.log(`실 Firestore 모드: 프로젝트 ${PROJECT_ID}`);
+}
+
+admin.initializeApp(useEmulator ? { projectId: 'demo-no-project' } : undefined);
 
 const db = admin.firestore();
 

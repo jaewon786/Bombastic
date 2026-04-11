@@ -86,4 +86,41 @@ class BombRepository {
     }
     return map;
   }
+
+  /// pass 로그 전체 조회 (타임스탬프 포함, 최장 홀딩 시간 계산용)
+  Future<List<Map<String, dynamic>>> fetchPassLogs(String groupId) async {
+    final snap = await _firestore
+        .collection('groups')
+        .doc(groupId)
+        .collection('passes')
+        .orderBy('timestamp')
+        .get();
+    return snap.docs.map((d) => d.data()).toList();
+  }
+
+  /// uid별 아이템 사용 횟수 집계 (결산용)
+  Future<Map<String, int>> fetchItemUsedCounts(String groupId) async {
+    final snap = await _firestore
+        .collection('groups')
+        .doc(groupId)
+        .collection('itemUsages')
+        .get();
+    final map = <String, int>{};
+    for (final doc in snap.docs) {
+      final uid = doc.data()['uid'] as String?;
+      if (uid != null) {
+        map[uid] = (map[uid] ?? 0) + 1;
+      }
+    }
+    return map;
+  }
+
+  /// 모든 활성 폭탄 실시간 스트림 (다중 폭탄 지원)
+  Stream<List<BombModel>> watchActiveBombs(String groupId) {
+    return _bombsOf(groupId)
+        .where('status', isEqualTo: BombStatus.active.name)
+        .snapshots()
+        .map((snap) =>
+            snap.docs.map((d) => BombModel.fromJson(d.data())).toList());
+  }
 }

@@ -48,4 +48,4 @@ final class ShopRepositoryProvider
   }
 }
 
-String _$shopRepositoryHash() => r'ac2c4908e18b21133b1308568f6ea1e86952e93c';
+String _$shopRepositoryHash() => r'55bd46dce38d2f52791a9197700e3c5e9373065d';

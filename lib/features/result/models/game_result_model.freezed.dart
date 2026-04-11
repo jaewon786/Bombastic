@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PlayerResultModel {
 
- String get uid; String get displayName; int get explodeCount; int get passCount;
+ String get uid; String get displayName; int get explodeCount; int get passCount; int get maxHoldingMinutes;// 최장 홀딩 시간 (분)
+ int get itemUsedCount;
 /// Create a copy of PlayerResultModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $PlayerResultModelCopyWith<PlayerResultModel> get copyWith => _$PlayerResultMode
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlayerResultModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.explodeCount, explodeCount) || other.explodeCount == explodeCount)&&(identical(other.passCount, passCount) || other.passCount == passCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlayerResultModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.explodeCount, explodeCount) || other.explodeCount == explodeCount)&&(identical(other.passCount, passCount) || other.passCount == passCount)&&(identical(other.maxHoldingMinutes, maxHoldingMinutes) || other.maxHoldingMinutes == maxHoldingMinutes)&&(identical(other.itemUsedCount, itemUsedCount) || other.itemUsedCount == itemUsedCount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,uid,displayName,explodeCount,passCount);
+int get hashCode => Object.hash(runtimeType,uid,displayName,explodeCount,passCount,maxHoldingMinutes,itemUsedCount);
 
 @override
 String toString() {
-  return 'PlayerResultModel(uid: $uid, displayName: $displayName, explodeCount: $explodeCount, passCount: $passCount)';
+  return 'PlayerResultModel(uid: $uid, displayName: $displayName, explodeCount: $explodeCount, passCount: $passCount, maxHoldingMinutes: $maxHoldingMinutes, itemUsedCount: $itemUsedCount)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $PlayerResultModelCopyWith<$Res>  {
   factory $PlayerResultModelCopyWith(PlayerResultModel value, $Res Function(PlayerResultModel) _then) = _$PlayerResultModelCopyWithImpl;
 @useResult
 $Res call({
- String uid, String displayName, int explodeCount, int passCount
+ String uid, String displayName, int explodeCount, int passCount, int maxHoldingMinutes, int itemUsedCount
 });
 
 
@@ -65,12 +66,14 @@ class _$PlayerResultModelCopyWithImpl<$Res>
 
 /// Create a copy of PlayerResultModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? displayName = null,Object? explodeCount = null,Object? passCount = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? displayName = null,Object? explodeCount = null,Object? passCount = null,Object? maxHoldingMinutes = null,Object? itemUsedCount = null,}) {
   return _then(_self.copyWith(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,explodeCount: null == explodeCount ? _self.explodeCount : explodeCount // ignore: cast_nullable_to_non_nullable
 as int,passCount: null == passCount ? _self.passCount : passCount // ignore: cast_nullable_to_non_nullable
+as int,maxHoldingMinutes: null == maxHoldingMinutes ? _self.maxHoldingMinutes : maxHoldingMinutes // ignore: cast_nullable_to_non_nullable
+as int,itemUsedCount: null == itemUsedCount ? _self.itemUsedCount : itemUsedCount // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -156,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uid,  String displayName,  int explodeCount,  int passCount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uid,  String displayName,  int explodeCount,  int passCount,  int maxHoldingMinutes,  int itemUsedCount)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlayerResultModel() when $default != null:
-return $default(_that.uid,_that.displayName,_that.explodeCount,_that.passCount);case _:
+return $default(_that.uid,_that.displayName,_that.explodeCount,_that.passCount,_that.maxHoldingMinutes,_that.itemUsedCount);case _:
   return orElse();
 
 }
@@ -177,10 +180,10 @@ return $default(_that.uid,_that.displayName,_that.explodeCount,_that.passCount);
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uid,  String displayName,  int explodeCount,  int passCount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uid,  String displayName,  int explodeCount,  int passCount,  int maxHoldingMinutes,  int itemUsedCount)  $default,) {final _that = this;
 switch (_that) {
 case _PlayerResultModel():
-return $default(_that.uid,_that.displayName,_that.explodeCount,_that.passCount);case _:
+return $default(_that.uid,_that.displayName,_that.explodeCount,_that.passCount,_that.maxHoldingMinutes,_that.itemUsedCount);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +200,10 @@ return $default(_that.uid,_that.displayName,_that.explodeCount,_that.passCount);
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uid,  String displayName,  int explodeCount,  int passCount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uid,  String displayName,  int explodeCount,  int passCount,  int maxHoldingMinutes,  int itemUsedCount)?  $default,) {final _that = this;
 switch (_that) {
 case _PlayerResultModel() when $default != null:
-return $default(_that.uid,_that.displayName,_that.explodeCount,_that.passCount);case _:
+return $default(_that.uid,_that.displayName,_that.explodeCount,_that.passCount,_that.maxHoldingMinutes,_that.itemUsedCount);case _:
   return null;
 
 }
@@ -212,13 +215,16 @@ return $default(_that.uid,_that.displayName,_that.explodeCount,_that.passCount);
 @JsonSerializable()
 
 class _PlayerResultModel implements PlayerResultModel {
-  const _PlayerResultModel({required this.uid, required this.displayName, required this.explodeCount, required this.passCount});
+  const _PlayerResultModel({required this.uid, required this.displayName, required this.explodeCount, required this.passCount, this.maxHoldingMinutes = 0, this.itemUsedCount = 0});
   factory _PlayerResultModel.fromJson(Map<String, dynamic> json) => _$PlayerResultModelFromJson(json);
 
 @override final  String uid;
 @override final  String displayName;
 @override final  int explodeCount;
 @override final  int passCount;
+@override@JsonKey() final  int maxHoldingMinutes;
+// 최장 홀딩 시간 (분)
+@override@JsonKey() final  int itemUsedCount;
 
 /// Create a copy of PlayerResultModel
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +239,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlayerResultModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.explodeCount, explodeCount) || other.explodeCount == explodeCount)&&(identical(other.passCount, passCount) || other.passCount == passCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlayerResultModel&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.explodeCount, explodeCount) || other.explodeCount == explodeCount)&&(identical(other.passCount, passCount) || other.passCount == passCount)&&(identical(other.maxHoldingMinutes, maxHoldingMinutes) || other.maxHoldingMinutes == maxHoldingMinutes)&&(identical(other.itemUsedCount, itemUsedCount) || other.itemUsedCount == itemUsedCount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,uid,displayName,explodeCount,passCount);
+int get hashCode => Object.hash(runtimeType,uid,displayName,explodeCount,passCount,maxHoldingMinutes,itemUsedCount);
 
 @override
 String toString() {
-  return 'PlayerResultModel(uid: $uid, displayName: $displayName, explodeCount: $explodeCount, passCount: $passCount)';
+  return 'PlayerResultModel(uid: $uid, displayName: $displayName, explodeCount: $explodeCount, passCount: $passCount, maxHoldingMinutes: $maxHoldingMinutes, itemUsedCount: $itemUsedCount)';
 }
 
 
@@ -253,7 +259,7 @@ abstract mixin class _$PlayerResultModelCopyWith<$Res> implements $PlayerResultM
   factory _$PlayerResultModelCopyWith(_PlayerResultModel value, $Res Function(_PlayerResultModel) _then) = __$PlayerResultModelCopyWithImpl;
 @override @useResult
 $Res call({
- String uid, String displayName, int explodeCount, int passCount
+ String uid, String displayName, int explodeCount, int passCount, int maxHoldingMinutes, int itemUsedCount
 });
 
 
@@ -270,12 +276,14 @@ class __$PlayerResultModelCopyWithImpl<$Res>
 
 /// Create a copy of PlayerResultModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? displayName = null,Object? explodeCount = null,Object? passCount = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? displayName = null,Object? explodeCount = null,Object? passCount = null,Object? maxHoldingMinutes = null,Object? itemUsedCount = null,}) {
   return _then(_PlayerResultModel(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,explodeCount: null == explodeCount ? _self.explodeCount : explodeCount // ignore: cast_nullable_to_non_nullable
 as int,passCount: null == passCount ? _self.passCount : passCount // ignore: cast_nullable_to_non_nullable
+as int,maxHoldingMinutes: null == maxHoldingMinutes ? _self.maxHoldingMinutes : maxHoldingMinutes // ignore: cast_nullable_to_non_nullable
+as int,itemUsedCount: null == itemUsedCount ? _self.itemUsedCount : itemUsedCount // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

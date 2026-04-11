@@ -31,7 +31,8 @@ service cloud.firestore {
         && request.resource.data.status == resource.data.status
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.gameStartedAt == resource.data.gameStartedAt
-        && request.resource.data.gameEndedAt == resource.data.gameEndedAt;
+        && request.resource.data.gameEndedAt == resource.data.gameEndedAt
+        && request.resource.data.gameExpiresAt == resource.data.gameExpiresAt;
     }
 
     match /users/{uid} {
@@ -103,6 +104,12 @@ service cloud.firestore {
                       ]);
 
         allow create, delete: if false;
+      }
+
+      // 아이템 사용 로그: 멤버 읽기 전용 (Cloud Functions만 기록)
+      match /itemUsages/{usageId} {
+        allow read: if isGroupMember(groupId);
+        allow create, update, delete: if false;
       }
 
       // pass 로그: 멤버 읽기, 멤버 본인(fromUid)만 생성

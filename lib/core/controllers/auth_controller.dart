@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../repositories/auth_repository.dart';
+import '../services/fcm_service.dart';
 
 part 'auth_controller.g.dart';
 
@@ -22,9 +23,11 @@ class AuthController extends _$AuthController {
       // 1. 익명 로그인 요청
       final userCredential = await repo.signInAnonymously();
       
-      // 2. 로그인 성공 시 Firestore에 정보 저장
+      // 2. 로그인 성공 시 Firestore에 정보 저장 + FCM 토큰 등록
       if (userCredential.user != null) {
-        await repo.saveUserToFirestore(userCredential.user!);
+        final user = userCredential.user!;
+        await repo.saveUserToFirestore(user);
+        await FcmService.saveTokenForUser(user.uid);
       }
     });
   }

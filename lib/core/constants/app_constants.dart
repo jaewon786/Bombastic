@@ -11,6 +11,9 @@ abstract final class AppConstants {
   /// 폭탄 기본 제한시간 (초) — 24시간
   static const int defaultBombDurationSeconds = 86400;
 
+  /// 게임 기본 총 기간 (초) — 7일 (서버 BOMB_DEFAULT_DURATION_SECONDS × 7과 동기화)
+  static const int defaultGameDurationSeconds = 7 * 24 * 60 * 60;
+
   /// 게임 최소 진행 일수
   static const int minGameDays = 4;
 

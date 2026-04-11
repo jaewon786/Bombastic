@@ -12,6 +12,8 @@ _PlayerResultModel _$PlayerResultModelFromJson(Map<String, dynamic> json) =>
       displayName: json['displayName'] as String,
       explodeCount: (json['explodeCount'] as num).toInt(),
       passCount: (json['passCount'] as num).toInt(),
+      maxHoldingMinutes: (json['maxHoldingMinutes'] as num?)?.toInt() ?? 0,
+      itemUsedCount: (json['itemUsedCount'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$PlayerResultModelToJson(_PlayerResultModel instance) =>
@@ -20,6 +22,8 @@ Map<String, dynamic> _$PlayerResultModelToJson(_PlayerResultModel instance) =>
       'displayName': instance.displayName,
       'explodeCount': instance.explodeCount,
       'passCount': instance.passCount,
+      'maxHoldingMinutes': instance.maxHoldingMinutes,
+      'itemUsedCount': instance.itemUsedCount,
     };
 
 _GameResultModel _$GameResultModelFromJson(Map<String, dynamic> json) =>

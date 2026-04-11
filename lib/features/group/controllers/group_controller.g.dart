@@ -124,7 +124,7 @@ final class GroupControllerProvider
   }
 }
 
-String _$groupControllerHash() => r'd7f8ee8c4b31971882ee8ecbb2ca0cbbd8fbd0a4';
+String _$groupControllerHash() => r'fcf0b43eb097b98a1e772eed5c80ed598dea8994';
 
 abstract class _$GroupController extends $Notifier<AsyncValue<void>> {
   AsyncValue<void> build();

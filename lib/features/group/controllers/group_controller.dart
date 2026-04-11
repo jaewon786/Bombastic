@@ -34,17 +34,26 @@ class GroupController extends _$GroupController {
       return null;
     }
 
-    final joinCode = _generateJoinCode();
     String? groupId;
     final result = await AsyncValue.guard(() async {
-      final group = await ref.read(groupRepositoryProvider).createGroup(
-            creatorUid: uid,
-            joinCode: joinCode,
-            name: name,
-            maxMembers: maxMembers,
-            nickname: nickname,
-          );
-      groupId = group.id;
+      // 클라이언트에서 코드 생성; 서버가 중복을 감지하면 새 코드로 1회 재시도
+      GroupModel? group;
+      for (var attempt = 0; attempt < 2; attempt++) {
+        try {
+          group = await ref.read(groupRepositoryProvider).createGroup(
+                creatorUid: uid,
+                joinCode: _generateJoinCode(),
+                name: name,
+                maxMembers: maxMembers,
+                nickname: nickname,
+              );
+          break;
+        } catch (e) {
+          if (attempt == 0 && e.toString().contains('already-exists')) continue;
+          rethrow;
+        }
+      }
+      groupId = group!.id;
       await ref.read(userRepositoryProvider).addGroupMembership(
             uid: uid,
             groupId: group.id,

@@ -72,6 +72,7 @@ export const useItem = functions.https.onCall(async (data, context) => {
 
   const batch = db.batch();
   const members = group.memberUids as string[];
+  let extraResult: Record<string, unknown> = {};
 
   // ── 아이템 효과 적용 ─────────────────────────────────────────
   switch (item.type as string) {
@@ -124,6 +125,7 @@ export const useItem = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('failed-precondition', '새 폭탄을 전달할 멤버가 없습니다.');
       }
       const target = eligible[Math.floor(Math.random() * eligible.length)];
+      extraResult = { targetUid: target };
       const now2 = admin.firestore.Timestamp.now();
       const newBombRef = db
         .collection('groups')
@@ -141,20 +143,26 @@ export const useItem = functions.https.onCall(async (data, context) => {
         status: 'active',
         round: 1,
         explodedUid: null,
+        hasPenalty: false,
       });
       break;
     }
 
     case 'adjustGameDays': {
-      // 활성 폭탄 만료 시간 ±N일 조정 (기본 +1)
-      if (!activeBombDoc) break;
+      // 게임 전체 만료 시간 ±N일 조정 (group.gameExpiresAt 기준)
       const adjustDays = typeof days === 'number' ? days : 1;
-      const expiresAt2 = (activeBomb!.expiresAt as admin.firestore.Timestamp).toDate();
-      const newExpires2 = new Date(
-        expiresAt2.getTime() + adjustDays * 24 * 60 * 60 * 1000,
+      const currentExpires = group.gameExpiresAt
+        ? (group.gameExpiresAt as admin.firestore.Timestamp).toDate()
+        : new Date();
+      const newGameExpires = new Date(
+        currentExpires.getTime() + adjustDays * 24 * 60 * 60 * 1000,
       );
-      batch.update(activeBombDoc.ref, {
-        expiresAt: admin.firestore.Timestamp.fromDate(newExpires2),
+      // 최소 1분 후 보장
+      const minExpires = new Date(Date.now() + 60 * 1000);
+      batch.update(groupRef, {
+        gameExpiresAt: admin.firestore.Timestamp.fromDate(
+          newGameExpires > minExpires ? newGameExpires : minExpires,
+        ),
       });
       break;
     }
@@ -162,6 +170,19 @@ export const useItem = functions.https.onCall(async (data, context) => {
     default:
       throw new functions.https.HttpsError('invalid-argument', `알 수 없는 아이템 타입: ${item.type}`);
   }
+
+  // ── itemUsages 서브컬렉션에 사용 로그 기록 ───────────────────
+  const usageRef = db
+    .collection('groups')
+    .doc(groupId)
+    .collection('itemUsages')
+    .doc();
+  batch.set(usageRef, {
+    uid,
+    itemId,
+    itemType: item.type,
+    usedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
 
   // ── 인벤토리에서 아이템 제거 ─────────────────────────────────
   batch.update(userRef, {
@@ -171,5 +192,5 @@ export const useItem = functions.https.onCall(async (data, context) => {
   await batch.commit();
   functions.logger.info(`아이템 사용 완료: uid=${uid}, item=${itemId}, group=${groupId}`);
 
-  return { success: true };
+  return { success: true, ...extraResult };
 });

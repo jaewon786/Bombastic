@@ -52,6 +52,41 @@ export const checkBombExpiry = functions
   });
 
 /**
+ * 1분마다 실행되는 게임 7일 만료 감지 스케줄러.
+ * gameExpiresAt이 현재 시각보다 이전이고 status가 'playing'인 그룹을 찾아 종료 처리.
+ */
+export const checkGameExpiry = functions
+  .runWith({ timeoutSeconds: 60, memory: '256MB' })
+  .pubsub.schedule('every 1 minutes')
+  .onRun(async () => {
+    const now = admin.firestore.Timestamp.now();
+
+    const snapshot = await db
+      .collection('groups')
+      .where('status', '==', 'playing')
+      .where('gameExpiresAt', '<=', now)
+      .get();
+
+    if (snapshot.empty) {
+      functions.logger.info('만료된 게임 없음');
+      return;
+    }
+
+    const batch = db.batch();
+
+    for (const doc of snapshot.docs) {
+      functions.logger.info(`게임 7일 만료 처리: ${doc.id}`);
+      batch.update(doc.ref, {
+        status: 'finished',
+        gameEndedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    await batch.commit();
+    functions.logger.info(`${snapshot.size}개 게임 만료 처리 완료`);
+  });
+
+/**
  * 폭탄 폭발 시 Firestore 트리거 (onUpdate).
  * status가 'exploded'로 변경된 시점에 다음 라운드 폭탄 생성.
  */
@@ -65,7 +100,7 @@ export const onBombExploded = functions.firestore
     if (after.status !== 'exploded') return;    // 폭발이 아닌 경우 skip
 
     const { groupId } = context.params;
-    functions.logger.info(`그룹 ${groupId} 폭탄 폭발 → 다음 라운드 시작`);
+    functions.logger.info(`그룹 ${groupId} 폭탄 폭발 → 게임 종료 처리`);
 
     // 폭발 즉시 게임 종료
     const groupRef = db.collection('groups').doc(groupId);

@@ -20,6 +20,7 @@ abstract class GroupModel with _$GroupModel {
     required DateTime createdAt,
     DateTime? gameStartedAt,
     DateTime? gameEndedAt,
+    DateTime? gameExpiresAt, // 7일 경과 정상 종료 기준 시각
   }) = _GroupModel;
 
   factory GroupModel.fromJson(Map<String, dynamic> json) =>
@@ -31,6 +32,7 @@ Map<String, dynamic> _normalizeGroupJson(Map<String, dynamic> json) {
   map['createdAt'] = _normalizeRequiredDateValue(map['createdAt'], 'createdAt');
   map['gameStartedAt'] = _normalizeNullableDateValue(map['gameStartedAt']);
   map['gameEndedAt'] = _normalizeNullableDateValue(map['gameEndedAt']);
+  map['gameExpiresAt'] = _normalizeNullableDateValue(map['gameExpiresAt']);
   return map;
 }
 

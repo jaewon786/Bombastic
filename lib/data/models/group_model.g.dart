@@ -24,6 +24,9 @@ _GroupModel _$GroupModelFromJson(Map<String, dynamic> json) => _GroupModel(
   gameEndedAt: json['gameEndedAt'] == null
       ? null
       : DateTime.parse(json['gameEndedAt'] as String),
+  gameExpiresAt: json['gameExpiresAt'] == null
+      ? null
+      : DateTime.parse(json['gameExpiresAt'] as String),
 );
 
 Map<String, dynamic> _$GroupModelToJson(_GroupModel instance) =>
@@ -39,6 +42,7 @@ Map<String, dynamic> _$GroupModelToJson(_GroupModel instance) =>
       'createdAt': instance.createdAt.toIso8601String(),
       'gameStartedAt': instance.gameStartedAt?.toIso8601String(),
       'gameEndedAt': instance.gameEndedAt?.toIso8601String(),
+      'gameExpiresAt': instance.gameExpiresAt?.toIso8601String(),
     };
 
 const _$GroupStatusEnumMap = {

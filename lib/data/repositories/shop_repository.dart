@@ -1,6 +1,5 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -11,13 +10,17 @@ part 'shop_repository.g.dart';
 
 @riverpod
 ShopRepository shopRepository(Ref ref) {
-  return ShopRepository(ref.watch(firestoreProvider));
+  return ShopRepository(
+    ref.watch(firestoreProvider),
+    ref.watch(functionsProvider),
+  );
 }
 
 class ShopRepository {
-  ShopRepository(this._firestore);
+  ShopRepository(this._firestore, this._functions);
 
   final FirebaseFirestore _firestore;
+  final FirebaseFunctions _functions;
 
   /// 아이템 목록 조회
   Future<List<ShopItemModel>> fetchItems() async {
@@ -38,50 +41,22 @@ class ShopRepository {
             snap.docs.map((d) => ShopItemModel.fromJson(d.data())).toList());
   }
 
-  /// 랜덤박스 구매 — 그룹별 재화 차감 후 가중치 기반으로 아이템 1개 지급, 획득 아이템 반환
-  Future<ShopItemModel> purchaseRandomBox({
-    required String uid,
-    required String groupId,
-  }) async {
-    final items = await fetchItems();
-    final pool = items.where((i) => i.probability > 0).toList();
-    if (pool.isEmpty) throw Exception('뽑기 가능한 아이템이 없습니다.');
+  /// 랜덤박스 구매 — Cloud Function 위임 (서버 측 랜덤·트랜잭션으로 조작 방지)
+  /// 반환: 획득한 ShopItemModel
+  Future<ShopItemModel> purchaseRandomBox({required String groupId}) async {
+    final result = await _functions
+        .httpsCallable('openLootBox')
+        .call<Map<Object?, Object?>>({'groupId': groupId});
 
-    final userRef =
-        _firestore.collection(AppConstants.usersCollection).doc(uid);
+    final data = Map<String, dynamic>.from(result.data);
+    final itemId = data['itemId'] as String;
 
-    late ShopItemModel obtained;
+    final itemSnap = await _firestore
+        .collection(AppConstants.shopItemsCollection)
+        .doc(itemId)
+        .get();
 
-    await _firestore.runTransaction((tx) async {
-      final userSnap = await tx.get(userRef);
-      final currencies =
-          (userSnap.data()?['groupCurrencies'] as Map<String, dynamic>?) ?? {};
-      final currentCurrency = (currencies[groupId] as num?)?.toInt() ?? 0;
-
-      if (currentCurrency < CurrencyConstants.randomBoxPrice) {
-        throw Exception('재화가 부족합니다.');
-      }
-
-      // 가중치 기반 랜덤 선택
-      final totalWeight = pool.fold(0, (acc, i) => acc + i.probability);
-      final roll = Random().nextInt(totalWeight);
-      var cumulative = 0;
-      obtained = pool.last;
-      for (final item in pool) {
-        cumulative += item.probability;
-        if (roll < cumulative) {
-          obtained = item;
-          break;
-        }
-      }
-
-      tx.update(userRef, {
-        'groupCurrencies.$groupId':
-            currentCurrency - CurrencyConstants.randomBoxPrice,
-        'groupOwnedItemIds.$groupId': FieldValue.arrayUnion([obtained.id]),
-      });
-    });
-
-    return obtained;
+    if (!itemSnap.exists) throw Exception('아이템 정보를 찾을 수 없습니다.');
+    return ShopItemModel.fromJson(itemSnap.data()!);
   }
 }

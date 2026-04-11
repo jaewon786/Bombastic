@@ -40,6 +40,11 @@
             </intent-filter>
         </service>
 
+        <!-- FCM 백그라운드/종료 상태 알림 기본 채널 -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="bombastic_channel" />
+
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

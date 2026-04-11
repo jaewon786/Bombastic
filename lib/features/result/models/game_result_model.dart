@@ -10,6 +10,8 @@ abstract class PlayerResultModel with _$PlayerResultModel {
     required String displayName,
     required int explodeCount,
     required int passCount,
+    @Default(0) int maxHoldingMinutes, // 최장 홀딩 시간 (분)
+    @Default(0) int itemUsedCount,     // 아이템 사용 횟수
   }) = _PlayerResultModel;
 
   factory PlayerResultModel.fromJson(Map<String, dynamic> json) =>

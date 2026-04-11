@@ -58,5 +58,17 @@ dev_dependencies:
   json_serializable: ^6.8.0
   # custom_lint, riverpod_lint: 추후 안정화 후 재추가
 
+  # 스플래시 스크린
+  flutter_native_splash: ^2.4.3
+
 flutter:
   uses-material-design: true
+
+flutter_native_splash:
+  color: "#FF3B30"           # 폭탄 레드 (라이트 모드)
+  color_dark: "#1a0000"      # 다크 모드 배경
+  # image: assets/splash_logo.png  # 로고 준비 시 주석 해제
+  android_12:
+    color: "#FF3B30"
+    color_dark: "#1a0000"
+  web: false

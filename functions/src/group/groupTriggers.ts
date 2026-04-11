@@ -27,6 +27,7 @@ export const onGroupMemberJoined = functions.firestore
 
     const now = admin.firestore.Timestamp.now();
     const expiresAt = new Date(now.toMillis() + bombDefaultDurationMs);
+    const gameExpiresAt = new Date(now.toMillis() + 7 * 24 * 60 * 60 * 1000);
 
     // 첫 폭탄 생성 (첫 번째 멤버가 보유)
     const firstHolder = (after.memberUids as string[])[0];
@@ -48,6 +49,7 @@ export const onGroupMemberJoined = functions.firestore
     batch.update(change.after.ref, {
       status: 'playing',
       gameStartedAt: now,
+      gameExpiresAt: admin.firestore.Timestamp.fromDate(gameExpiresAt),
     });
 
     await batch.commit();
@@ -68,6 +70,18 @@ export const createGroup = functions.https.onCall(async (data, context) => {
   }
 
   const uid = context.auth.uid;
+
+  // 중복 코드 체크 (클라이언트 생성 방식 유지; 충돌 시 클라이언트가 재시도)
+  const existing = await db
+    .collection('groups')
+    .where('joinCode', '==', joinCode.toUpperCase())
+    .where('status', '==', 'waiting')
+    .limit(1)
+    .get();
+  if (!existing.empty) {
+    throw new functions.https.HttpsError('already-exists', '이미 사용 중인 참여코드입니다. 다시 시도해 주세요.');
+  }
+
   const groupRef = db.collection('groups').doc();
 
   await groupRef.set({
@@ -116,6 +130,7 @@ export const startGame = functions.https.onCall(async (data, context) => {
 
   const now = admin.firestore.Timestamp.now();
   const expiresAt = new Date(now.toMillis() + bombDefaultDurationMs);
+  const gameExpiresAt = new Date(now.toMillis() + 7 * 24 * 60 * 60 * 1000);
   const firstHolder = group.memberUids[0];
   const bombRef = db.collection('groups').doc(groupId).collection('bombs').doc();
 
@@ -133,6 +148,7 @@ export const startGame = functions.https.onCall(async (data, context) => {
   batch.update(groupRef, {
     status: 'playing',
     gameStartedAt: now,
+    gameExpiresAt: admin.firestore.Timestamp.fromDate(gameExpiresAt),
   });
 
   await batch.commit();

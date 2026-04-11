@@ -99,9 +99,15 @@ class GameController extends _$GameController {
           'explodedUid': null,
         });
 
+        final gameExpiresAt = Timestamp.fromMillisecondsSinceEpoch(
+          now.millisecondsSinceEpoch +
+              AppConstants.defaultGameDurationSeconds * 1000,
+        );
+
         tx.update(groupRef, {
           'status': 'playing',
           'gameStartedAt': now,
+          'gameExpiresAt': gameExpiresAt,
         });
       });
     });

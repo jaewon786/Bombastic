@@ -8,12 +8,12 @@ part of 'result_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// 게임 결과 계산 (폭발 기록 기반)
+/// 게임 결과 계산 (폭발 기록 + pass 로그 기반)
 
 @ProviderFor(gameResult)
 final gameResultProvider = GameResultFamily._();
 
-/// 게임 결과 계산 (폭발 기록 기반)
+/// 게임 결과 계산 (폭발 기록 + pass 로그 기반)
 
 final class GameResultProvider
     extends
@@ -23,7 +23,7 @@ final class GameResultProvider
           FutureOr<GameResultModel>
         >
     with $FutureModifier<GameResultModel>, $FutureProvider<GameResultModel> {
-  /// 게임 결과 계산 (폭발 기록 기반)
+  /// 게임 결과 계산 (폭발 기록 + pass 로그 기반)
   GameResultProvider._({
     required GameResultFamily super.from,
     required String super.argument,
@@ -68,9 +68,9 @@ final class GameResultProvider
   }
 }
 
-String _$gameResultHash() => r'25bb2cfc54a70b124fa477df7a15696c3c6c2948';
+String _$gameResultHash() => r'a24d6256d04a0215544f3674566828394857cbde';
 
-/// 게임 결과 계산 (폭발 기록 기반)
+/// 게임 결과 계산 (폭발 기록 + pass 로그 기반)
 
 final class GameResultFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<GameResultModel>, String> {
@@ -83,7 +83,7 @@ final class GameResultFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// 게임 결과 계산 (폭발 기록 기반)
+  /// 게임 결과 계산 (폭발 기록 + pass 로그 기반)
 
   GameResultProvider call(String groupId) =>
       GameResultProvider._(argument: groupId, from: this);
