@@ -6,6 +6,10 @@ import '../../../data/repositories/mission_repository.dart';
 
 part 'mission_controller.g.dart';
 
+final serverTodayKeyProvider = FutureProvider<String>((ref) {
+  return ref.watch(missionRepositoryProvider).fetchServerTodayKey();
+});
+
 /// 미션 목록 (실시간, 유저의 completedMissionIds 반영)
 @riverpod
 Stream<List<MissionModel>> missions(Ref ref) {

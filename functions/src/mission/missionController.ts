@@ -5,6 +5,25 @@ const db = admin.firestore();
 
 const DAILY_CHECK_IN_REWARD = 50;
 
+function getSeoulTodayKey() {
+  const now = new Date();
+  const seoulDate = new Date(
+    now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }),
+  );
+  return `${seoulDate.getFullYear()}-${String(seoulDate.getMonth() + 1).padStart(2, '0')}-${String(seoulDate.getDate()).padStart(2, '0')}`;
+}
+
+/**
+ * 서버 기준 오늘 날짜 조회 Callable Function.
+ */
+export const getTodayKey = functions.https.onCall(async (_data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', '로그인이 필요합니다.');
+  }
+
+  return { todayKey: getSeoulTodayKey() };
+});
+
 /**
  * 출석 체크 Callable Function.
  * data: { groupId: string }
@@ -23,9 +42,7 @@ export const checkIn = functions.https.onCall(async (data, context) => {
   const userRef = db.collection('users').doc(uid);
 
   // Asia/Seoul 기준 오늘 날짜 (YYYY-MM-DD)
-  const now = new Date();
-  const seoulDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
-  const todayKey = `${seoulDate.getFullYear()}-${String(seoulDate.getMonth() + 1).padStart(2, '0')}-${String(seoulDate.getDate()).padStart(2, '0')}`;
+  const todayKey = getSeoulTodayKey();
 
   return db.runTransaction(async (tx) => {
     const userSnap = await tx.get(userRef);

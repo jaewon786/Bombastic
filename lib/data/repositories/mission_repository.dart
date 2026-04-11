@@ -75,4 +75,13 @@ class MissionRepository {
     );
     return true;
   }
+
+  /// 서버(Asia/Seoul) 기준 오늘 날짜 key 조회
+  Future<String> fetchServerTodayKey() async {
+    final result = await callHttpsCallableWithRegionFallback(
+      functionName: 'getTodayKey',
+    );
+    final data = Map<String, dynamic>.from(result.data as Map);
+    return data['todayKey'] as String;
+  }
 }

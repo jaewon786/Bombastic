@@ -29,7 +29,7 @@ abstract final class AppConstants {
 
 abstract final class CurrencyConstants {
   /// 출석 체크 보상 재화
-  static const int dailyCheckInReward = 10;
+  static const int dailyCheckInReward = 50;
 
   /// 미션 완료 보상 재화
   static const int missionReward = 30;

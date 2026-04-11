@@ -16,12 +16,16 @@ class MissionBody extends ConsumerWidget {
     final missionsAsync = ref.watch(missionsProvider);
     final checkInState = ref.watch(missionControllerProvider);
     final currentUser = ref.watch(currentUserProvider).asData?.value;
-    final now = DateTime.now();
+    final serverTodayKeyAsync = ref.watch(serverTodayKeyProvider);
     final lastCheckIn = currentUser?.lastCheckInDate;
-    final alreadyCheckedIn = lastCheckIn != null &&
-        lastCheckIn.year == now.year &&
-        lastCheckIn.month == now.month &&
-        lastCheckIn.day == now.day;
+    final lastCheckInKey = lastCheckIn == null
+      ? null
+      : '${lastCheckIn.year.toString().padLeft(4, '0')}-${lastCheckIn.month.toString().padLeft(2, '0')}-${lastCheckIn.day.toString().padLeft(2, '0')}';
+    final serverTodayKey = serverTodayKeyAsync.asData?.value;
+    final alreadyCheckedIn =
+      serverTodayKey != null && lastCheckInKey == serverTodayKey;
+    final isCheckInButtonDisabled =
+      checkInState.isLoading || alreadyCheckedIn || serverTodayKey == null;
 
     return Column(
       children: [
@@ -41,7 +45,7 @@ class MissionBody extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 ElevatedButton.icon(
-                  onPressed: alreadyCheckedIn || checkInState.isLoading
+                  onPressed: isCheckInButtonDisabled
                       ? null
                       : () async {
                           await ref
@@ -67,6 +71,14 @@ class MissionBody extends ConsumerWidget {
                       ? '오늘 출석 완료 \u2713'
                       : '출석하기 (+${CurrencyConstants.dailyCheckInReward}💰)'),
                 ),
+                if (serverTodayKeyAsync.isLoading)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text(
+                      '서버 시간 확인 중...',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ),
               ],
             ),
           ),
