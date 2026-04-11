@@ -40,7 +40,11 @@ service cloud.firestore {
       allow create: if isOwner(uid)
                     && request.resource.data.uid == uid;
       allow update: if isOwner(uid)
-                    && request.resource.data.uid == resource.data.uid;
+                    && request.resource.data.uid == uid
+                    && (
+                      resource.data.uid == null
+                      || request.resource.data.uid == resource.data.uid
+                    );
       allow delete: if false;
     }
 

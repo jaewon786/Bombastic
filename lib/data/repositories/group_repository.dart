@@ -78,8 +78,12 @@ class GroupRepository {
         throw StateError('그룹이 가득 찼습니다.');
       }
 
+      // Firestore rules에서 배열 길이/포함 검증을 수행하므로
+      // transform(arrayUnion) 대신 확정된 배열 값을 직접 기록한다.
+      final nextMemberUids = [...memberUids, uid];
+
       tx.update(groupRef, {
-        'memberUids': FieldValue.arrayUnion([uid]),
+        'memberUids': nextMemberUids,
       });
     });
   }
