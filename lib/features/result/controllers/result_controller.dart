@@ -32,6 +32,10 @@ Future<GameResultModel> gameResult(Ref ref, String groupId) async {
     }
   }
 
+  // 전달 횟수 집계
+  final passCounts =
+      await ref.read(bombRepositoryProvider).fetchPassCounts(groupId);
+
   // 모든 멤버를 포함한 랭킹 생성 (폭발 0회인 멤버도 포함)
   final rankList = memberUids
       .map(
@@ -39,7 +43,7 @@ Future<GameResultModel> gameResult(Ref ref, String groupId) async {
           uid: uid,
           displayName: nicknames[uid] ?? uid,
           explodeCount: countMap[uid] ?? 0,
-          passCount: 0, // TODO: passCount는 별도 로그 구조 필요
+          passCount: passCounts[uid] ?? 0,
         ),
       )
       .toList()
