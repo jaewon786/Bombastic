@@ -1,8 +1,6 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-import { bombDefaultDurationSeconds } from '../core/gameConfig';
-
 const db = admin.firestore();
 
 /**
@@ -52,17 +50,11 @@ export const passBomb = functions.https.onCall(async (data, context) => {
 
     const nextUid = memberUids[(currentIndex + 1) % memberUids.length];
 
-    // 서버 시간 기준 expiresAt 설정 — 기기 클럭 무관
-    const now = admin.firestore.Timestamp.now();
-    const expiresAt = new admin.firestore.Timestamp(
-      now.seconds + bombDefaultDurationSeconds,
-      now.nanoseconds,
-    );
-
+    // expiresAt은 폭탄 생성 시 서버에서 설정된 값을 그대로 유지한다.
+    // 타이머는 전달과 무관하게 계속 카운트다운되어야 하기 때문이다.
     tx.update(bombRef, {
       holderUid: nextUid,
       receivedAt: admin.firestore.FieldValue.serverTimestamp(),
-      expiresAt,
     });
 
     // pass 로그 (트랜잭션 내 기록으로 원자성 보장)
