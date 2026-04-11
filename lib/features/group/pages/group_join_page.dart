@@ -54,7 +54,7 @@ class _GroupJoinPageState extends ConsumerState<GroupJoinPage> {
                           _codeController.text.trim(),
                         );
                         if (groupId != null && context.mounted) {
-                          context.go('/group/$groupId/nickname');
+                          context.go('${AppRoutes.game}/$groupId');
                         }
                       },
                 child: state.isLoading

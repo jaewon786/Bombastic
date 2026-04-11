@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
 import '../../../data/firebase/firebase_providers.dart';
 import '../../../data/models/group_model.dart';
-import '../../admin/widgets/admin_cli_dialog.dart';
 import '../../group/controllers/group_controller.dart';
 import '../../mission/pages/mission_page.dart';
 import '../../shop/pages/shop_page.dart';
@@ -49,6 +48,21 @@ class GamePage extends ConsumerWidget {
 
 // ── Waiting 상태 UI ──────────────────────────────────────────
 
+List<Widget> _buildGlobalActions(WidgetRef ref, String groupId) {
+  final currency = ref.watch(currentUserProvider).asData?.value?.groupCurrencies[groupId] ?? 0;
+  return [
+    Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Text(
+          '$currency 🪙',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+      ),
+    ),
+  ];
+}
+
 class _WaitingView extends ConsumerWidget {
   const _WaitingView({required this.group});
 
@@ -60,7 +74,11 @@ class _WaitingView extends ConsumerWidget {
     final isHost = group.memberUids.isNotEmpty && group.memberUids[0] == uid;
 
     return Scaffold(
-      appBar: AppBar(title: Text(group.name)),
+      appBar: AppBar(
+        leading: BackButton(onPressed: () => context.go(AppRoutes.home)),
+        title: Text(group.name),
+        actions: _buildGlobalActions(ref, group.id),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -198,16 +216,9 @@ class _PlayingTabViewState extends ConsumerState<_PlayingTabView> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(onPressed: () => context.go(AppRoutes.home)),
         title: Text('💣 $groupName'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.developer_mode),
-            onPressed: () => showDialog(
-              context: context,
-              builder: (ctx) => AdminCliDialog(groupId: widget.groupId),
-            ),
-          ),
-        ],
+        actions: _buildGlobalActions(ref, widget.groupId),
       ),
       body: IndexedStack(
         index: _tabIndex,
@@ -230,15 +241,19 @@ class _PlayingTabViewState extends ConsumerState<_PlayingTabView> {
 
 // ── Finished 상태 UI ─────────────────────────────────────────
 
-class _FinishedView extends StatelessWidget {
+class _FinishedView extends ConsumerWidget {
   const _FinishedView({required this.group});
 
   final GroupModel group;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: Text(group.name)),
+      appBar: AppBar(
+        leading: BackButton(onPressed: () => context.go(AppRoutes.home)),
+        title: Text(group.name),
+        actions: _buildGlobalActions(ref, group.id), // Added currency here as well for consistency
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

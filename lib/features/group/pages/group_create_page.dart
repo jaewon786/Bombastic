@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:bomb_pass/core/constants/app_constants.dart';
 import 'package:bomb_pass/features/group/controllers/group_controller.dart';
+import '../../../core/router/app_router.dart';
 
 class GroupCreatePage extends ConsumerStatefulWidget {
   const GroupCreatePage({super.key});
@@ -94,8 +95,7 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
                             .read(groupControllerProvider.notifier)
                             .createGroup(name: name, maxMembers: _maxMembers);
                         if (groupId != null && context.mounted) {
-                          // 생성자도 닉네임 입력 화면을 거쳐 게임으로 진입
-                          context.go('/group/$groupId/nickname');
+                          context.go('${AppRoutes.game}/$groupId');
                         }
                       },
                 child: state.isLoading

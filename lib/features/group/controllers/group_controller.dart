@@ -86,6 +86,16 @@ class GroupController extends _$GroupController {
         throw Exception('그룹이 가득 찼습니다.');
       }
       await repo.joinGroup(groupId: group.id, uid: uid);
+      await ref.read(userRepositoryProvider).addGroupMembership(
+            uid: uid,
+            groupId: group.id,
+            nickname: '익명',
+          );
+      await repo.updateMemberNickname(
+            groupId: group.id,
+            uid: uid,
+            nickname: '익명',
+          );
       groupId = group.id;
     });
 
