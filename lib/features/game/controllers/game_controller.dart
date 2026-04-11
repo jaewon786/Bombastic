@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../data/firebase/firebase_providers.dart';
 import '../../../data/models/bomb_model.dart';
+import '../../../data/repositories/bomb_repository.dart';
 
 part 'game_controller.g.dart';
 
