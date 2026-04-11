@@ -30,10 +30,20 @@ class GameController extends _$GameController {
   @override
   AsyncValue<void> build() => const AsyncData(null);
 
+  Future<void> _runGuarded(Future<void> Function() operation) async {
+    if (!ref.mounted) return;
+    state = const AsyncLoading();
+    final nextState = await AsyncValue.guard(operation);
+    if (!ref.mounted) return;
+    state = nextState;
+  }
+
   /// 게임 시작 (Cloud Function 우선, 미배포 시 Firestore fallback)
   Future<void> startGame({required String groupId}) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    await _runGuarded(() async {
+      final uid = ref.read(currentUidProvider);
+      final firestore = ref.read(firestoreProvider);
+
       try {
         await callHttpsCallableWithRegionFallback(
           functionName: 'startGame',
@@ -47,10 +57,7 @@ class GameController extends _$GameController {
         if (!isFunctionNotFound) rethrow;
       }
 
-      final uid = ref.read(currentUidProvider);
       if (uid == null) throw Exception('로그인이 필요합니다.');
-
-      final firestore = ref.read(firestoreProvider);
       final groupRef = firestore.collection('groups').doc(groupId);
 
       await firestore.runTransaction((tx) async {
@@ -105,14 +112,13 @@ class GameController extends _$GameController {
     required String groupId,
     required String bombId,
   }) async {
-    state = const AsyncLoading();
-
-    state = await AsyncValue.guard(() async {
+    await _runGuarded(() async {
+      final groupRepository = ref.read(groupRepositoryProvider);
+      final bombRepository = ref.read(bombRepositoryProvider);
       final uid = ref.read(currentUidProvider);
       if (uid == null) throw Exception('로그인이 필요합니다.');
 
-      final group =
-          await ref.read(groupRepositoryProvider).watchGroup(groupId).first;
+      final group = await groupRepository.watchGroup(groupId).first;
       if (group == null) throw Exception('그룹을 찾을 수 없습니다.');
 
       final members = group.memberUids;
@@ -122,7 +128,7 @@ class GameController extends _$GameController {
       final nextIndex = (currentIndex + 1) % members.length;
       final nextUid = members[nextIndex];
 
-      await ref.read(bombRepositoryProvider).passBomb(
+      await bombRepository.passBomb(
             groupId: groupId,
             bombId: bombId,
             nextHolderUid: nextUid,
@@ -132,7 +138,7 @@ class GameController extends _$GameController {
           );
 
       // 전달 로그 기록 (passCount 집계용)
-      await ref.read(bombRepositoryProvider).logPass(
+      await bombRepository.logPass(
             groupId: groupId,
             fromUid: uid,
             toUid: nextUid,
@@ -146,8 +152,7 @@ class GameController extends _$GameController {
     required String itemId,
     int? days,
   }) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    await _runGuarded(() async {
       final data = <String, dynamic>{'groupId': groupId, 'itemId': itemId};
       if (days != null) data['days'] = days;
       await callHttpsCallableWithRegionFallback(
