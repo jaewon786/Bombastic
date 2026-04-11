@@ -2,6 +2,15 @@
 
 > 팀원 공용 메모판. 결정사항·방향성·논의 내용을 여기에 자유롭게 기록하세요.
 > 커밋 메시지보다 덜 형식적으로, 이슈보다 더 빠르게.
+
+## 최근 업데이트 (2026-04-11)
+
+- `game_page.dart` PR 충돌 해결: 단일 폭탄 인라인 UI 대신 다중 폭탄 `_BombCard` 구조 유지
+- 닉네임 표시 overflow 이슈 반영: 보유자 텍스트에 `TextOverflow.ellipsis` 적용
+- Functions 호출 안정화: `startGame`/`useItem`에 region fallback(`asia-northeast3` → `us-central1`) 적용
+- Functions 미배포 환경 대응: `startGame` callable 미존재 시 Firestore 트랜잭션 fallback 경로 추가
+- 모델 파싱 안정화: Firestore `Timestamp`를 `DateTime`으로 정규화 후 `fromJson` 처리
+
 ## 간단 방향성 메모
 
 ### 스크린 구성 및 흐름
