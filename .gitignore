@@ -23,9 +23,13 @@ android/key.properties
 # iOS
 ios/.symlinks/
 ios/Pods/
+ios/Podfile.lock
 ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
 ios/Runner.xcworkspace/xcuserdata/
+
+# Claude Code
+.claude/settings.local.json
 
 # Cloud Functions
 functions/node_modules/
