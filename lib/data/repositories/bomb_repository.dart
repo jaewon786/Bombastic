@@ -52,4 +52,38 @@ class BombRepository {
         .get();
     return snap.docs.map((d) => BombModel.fromJson(d.data())).toList();
   }
+
+  /// 폭탄 전달 로그 기록 (passes 서브컬렉션)
+  Future<void> logPass({
+    required String groupId,
+    required String fromUid,
+    required String toUid,
+  }) async {
+    await _firestore
+        .collection('groups')
+        .doc(groupId)
+        .collection('passes')
+        .add({
+      'fromUid': fromUid,
+      'toUid': toUid,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// uid별 전달 횟수 집계 (결산용)
+  Future<Map<String, int>> fetchPassCounts(String groupId) async {
+    final snap = await _firestore
+        .collection('groups')
+        .doc(groupId)
+        .collection('passes')
+        .get();
+    final map = <String, int>{};
+    for (final doc in snap.docs) {
+      final fromUid = doc.data()['fromUid'] as String?;
+      if (fromUid != null) {
+        map[fromUid] = (map[fromUid] ?? 0) + 1;
+      }
+    }
+    return map;
+  }
 }

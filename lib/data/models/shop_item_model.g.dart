@@ -13,6 +13,9 @@ _ShopItemModel _$ShopItemModelFromJson(Map<String, dynamic> json) =>
       description: json['description'] as String,
       price: (json['price'] as num).toInt(),
       type: $enumDecode(_$ItemTypeEnumMap, json['type']),
+      usageType:
+          $enumDecodeNullable(_$UsageTypeEnumMap, json['usageType']) ??
+          UsageType.always,
       isAvailable: json['isAvailable'] as bool? ?? true,
     );
 
@@ -23,6 +26,7 @@ Map<String, dynamic> _$ShopItemModelToJson(_ShopItemModel instance) =>
       'description': instance.description,
       'price': instance.price,
       'type': _$ItemTypeEnumMap[instance.type]!,
+      'usageType': _$UsageTypeEnumMap[instance.usageType]!,
       'isAvailable': instance.isAvailable,
     };
 
@@ -30,4 +34,12 @@ const _$ItemTypeEnumMap = {
   ItemType.swapOrder: 'swapOrder',
   ItemType.addBomb: 'addBomb',
   ItemType.enhancePenalty: 'enhancePenalty',
+  ItemType.shrinkDuration: 'shrinkDuration',
+  ItemType.reverseDirection: 'reverseDirection',
+  ItemType.adjustGameDays: 'adjustGameDays',
+};
+
+const _$UsageTypeEnumMap = {
+  UsageType.always: 'always',
+  UsageType.bombHolder: 'bombHolder',
 };

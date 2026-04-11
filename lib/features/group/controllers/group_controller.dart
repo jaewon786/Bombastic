@@ -79,6 +79,9 @@ class GroupController extends _$GroupController {
     final result = await AsyncValue.guard(() async {
       final group = await repo.findByJoinCode(joinCode);
       if (group == null) throw Exception('존재하지 않는 코드입니다.');
+      if (group.memberUids.contains(uid)) {
+        throw Exception('이미 참여한 그룹입니다.');
+      }
       if (group.memberUids.length >= group.maxMembers) {
         throw Exception('그룹이 가득 찼습니다.');
       }

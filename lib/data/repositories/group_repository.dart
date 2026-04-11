@@ -60,8 +60,27 @@ class GroupRepository {
     required String groupId,
     required String uid,
   }) async {
-    await _groups.doc(groupId).update({
-      'memberUids': FieldValue.arrayUnion([uid]),
+    final groupRef = _groups.doc(groupId);
+    await _firestore.runTransaction((tx) async {
+      final snap = await tx.get(groupRef);
+      if (!snap.exists || snap.data() == null) {
+        throw StateError('그룹을 찾을 수 없습니다.');
+      }
+
+      final data = snap.data()!;
+      final memberUids = List<String>.from(data['memberUids'] as List<dynamic>? ?? const []);
+      final maxMembers = (data['maxMembers'] as int?) ?? AppConstants.maxGroupSize;
+
+      if (memberUids.contains(uid)) {
+        throw StateError('이미 참여한 그룹입니다.');
+      }
+      if (memberUids.length >= maxMembers) {
+        throw StateError('그룹이 가득 찼습니다.');
+      }
+
+      tx.update(groupRef, {
+        'memberUids': FieldValue.arrayUnion([uid]),
+      });
     });
   }
 

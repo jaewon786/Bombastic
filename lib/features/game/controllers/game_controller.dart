@@ -58,6 +58,30 @@ class GameController extends _$GameController {
               const Duration(seconds: AppConstants.defaultBombDurationSeconds),
             ),
           );
+
+      // 전달 로그 기록 (passCount 집계용)
+      await ref.read(bombRepositoryProvider).logPass(
+            groupId: groupId,
+            fromUid: uid,
+            toUid: nextUid,
+          );
+    });
+  }
+
+  /// 아이템 사용 (Cloud Function 경유)
+  Future<void> useItem({
+    required String groupId,
+    required String itemId,
+    int? days,
+  }) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final data = <String, dynamic>{'groupId': groupId, 'itemId': itemId};
+      if (days != null) data['days'] = days;
+      await ref
+          .read(functionsProvider)
+          .httpsCallable('useItem')
+          .call<dynamic, Map<String, dynamic>>(data);
     });
   }
 }

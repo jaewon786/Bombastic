@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mv UsersjaewoDesktopbombastic/.git .)",
+      "Bash(mv UsersjaewoDesktopbombastic/.gitignore .)",
+      "Bash(mv UsersjaewoDesktopbombastic/* .)",
+      "Bash(rmdir UsersjaewoDesktopbombastic)"
+    ]
+  }
+}

@@ -7,3 +7,4 @@ admin.initializeApp();
 export * from './bomb/bombExpireScheduler';
 export * from './group/groupTriggers';
 export * from './notification/fcmSender';
+export * from './items/itemController';

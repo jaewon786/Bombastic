@@ -68,7 +68,7 @@ final class GameResultProvider
   }
 }
 
-String _$gameResultHash() => r'23f5ff8d0c786a01e729044f0ba781b80468acf6';
+String _$gameResultHash() => r'25bb2cfc54a70b124fa477df7a15696c3c6c2948';
 
 /// 게임 결과 계산 (폭발 기록 기반)
 

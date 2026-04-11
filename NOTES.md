@@ -85,9 +85,9 @@ AuthGate
 - [x] 중도 이탈 불가 처리 (`PopScope` + `_showExitBlockedDialog`)
 - [x] `UserRepository` 신설 — `watchUser`, `setUser`, `addGroupMembership`, `updateGroupNickname`, `removeGroupMembership`
 - [x] `currentUserProvider` 추가 (`firebase_providers.dart`, 현재 유저 Firestore 실시간 스트림)
-- [ ] 그룹 생성자 닉네임 입력 — 현재 `'익명'` 고정, 참여자와 달리 닉네임 설정 화면 없음
+- [x] 그룹 생성자 닉네임 입력 — 그룹 생성 후 닉네임 입력 화면으로 이동하도록 변경
 - [ ] 그룹 내 설정에서 닉네임 변경 기능 구현
-- [ ] 중복 참여 방지 — `joinGroup` 시 이미 멤버인지 확인 안 함 (`memberUids` 중복 추가 가능)
+- [x] 중복 참여 방지 — `joinGroup`에서 중복 멤버/정원 초과를 트랜잭션으로 검증
 - [ ] 참여코드 생성 클라이언트 유지 (중복 문제 발생 시 서버로 이전)
 
 ### 백엔드 · 서버
@@ -106,11 +106,11 @@ AuthGate
 - [x] `activeBombProvider` / `isMyTurnProvider` — groupId 파라미터로 전환 (family provider)
 - [x] `GamePage` — `groupId` 수신 후 `GroupStatus`에 따라 `_WaitingView` / `_PlayingView` / `_FinishedView` 분기
 - [x] `watchGroupProvider` 추가 (groupId 파라미터) — 기존 `currentGroupProvider` 대체
-- [ ] `_PlayingView` 게임 화면 정보 보완 — 현재 폭탄 보유자 닉네임 / 그룹 이름 / 참여자 명단 미표시
+- [x] `_PlayingView` 게임 화면 정보 보완 — 현재 폭탄 보유자 닉네임 / 그룹 이름 / 참여자 명단 표시
 - [ ] 7일 경과 정상 종료 처리 (스케줄러 → 그룹 상태 업데이트) — `onBombExploded`는 폭발 즉시 종료만 처리
-- [ ] 아이템 속성 분리 구현: ① 폭탄 보유 중 전용 / ② 상시 사용 가능
-- [ ] 아이템 효과 구현 (순서 섞기, 방향 바꾸기, 제한시간 단축, 폭탄 추가, 패널티 추가, 게임 기간 n일 증감 등)
-- [ ] 아이템 사용 UI — 인벤토리/사용 버튼 없음 (구매만 가능)
+- [x] 아이템 속성 분리 구현: ① 폭탄 보유 중 전용 / ② 상시 사용 가능
+- [x] 아이템 효과 구현 (순서 섞기, 방향 바꾸기, 제한시간 단축, 폭탄 추가, 패널티 추가, 게임 기간 n일 증감 등)
+- [x] 아이템 사용 UI — 인벤토리/사용 버튼 구현
 - [ ] 미션 완료 판단 트리거 — `isCompleted` 항상 `false`, 달성 검증 로직 없음
 - [ ] 출석 체크 중복 방지 확인 (서버타임스탬프 기준)
 
@@ -122,16 +122,26 @@ AuthGate
 - [x] `gameResult` provider — groupId 파라미터로 전환, 그룹 닉네임 맵 사용, 폭발 0회 멤버 포함
 - [x] `ResultPage` — groupId 수신 파라미터 추가, 라우트 `/result/:groupId`로 변경
 - [x] `share_plus` 연동 — `Share.shareXFiles`로 결과 이미지 실제 공유 구현
-- [ ] `passCount` 집계 구현 — 별도 pass 로그 서브컬렉션 구조 필요 (`result_controller.dart:42`)
+- [x] `passCount` 집계 구현 — `groups/{id}/passes` 로그 기반으로 결과 페이지 반영
 
 ### UI · 디자인
 - [x] 대기실 UI — 참여 코드 표시, 참여자 목록 (닉네임 + 방장 뱃지), 방장 게임 시작 버튼 (2명 이상 시 활성화)
-- [ ] 게임 화면 (`_PlayingView`) 기본 정보 표시 — 현재 폭탄 보유자 / 남은 시간 / 그룹 이름 / 참여자 명단
+- [x] 게임 화면 (`_PlayingView`) 기본 정보 표시 — 현재 폭탄 보유자 / 남은 시간 / 그룹 이름 / 참여자 명단
 - [ ] 결과 페이지 등장 연출/애니메이션 구현 (명예의 전당 순위 공개 효과)
 - [ ] 결과 페이지 통계 추가 (최다 토스 / 최장 홀딩 / 아이템 최다 사용)
 - [ ] 공유카드 디자인 완성 (`ResultShareCard`) + SNS 공유 유도 UX
 - [ ] 앱 아이콘 / 스플래시 스크린 (`flutter_native_splash`)
 - [ ] 다크모드 대응 확인
+
+### 🎯 다음 실행 백로그 Top 5
+
+| 우선순위 | 작업 | 범주 | 담당 | 예상 소요 | 완료 기준 |
+|---|---|---|---|---|---|
+| P0 | `joinGroup` 중복 참여 방지 | 인증 · 그룹 | 미정 | 0.5일 | 동일 uid 중복 가입이 불가능하고 회귀 테스트 케이스 확인 |
+| P0 | `firestore.rules` 보안 규칙 완성 | 백엔드 · 서버 | 미정 | 1일 | 그룹/폭탄/유저 문서에 대해 읽기/쓰기 권한 시나리오 검증 완료 |
+| P0 | Cloud Functions 에뮬레이터 테스트 + 배포 점검 | 백엔드 · 서버 | 미정 | 1일 | `startGame`, `useItem`, 스케줄러 핵심 경로가 로컬에서 재현되고 배포 체크리스트 통과 |
+| P1 | 7일 경과 정상 종료 처리 정책 및 구현 | 게임 로직 | 미정 | 1일 | 폭발 종료 외 기간 만료 종료가 일관되게 반영되고 결과 페이지로 연결 |
+| P1 | 결과 페이지 통계 확장 (최장 홀딩/아이템 최다 사용) | UI · 디자인/결과 | 미정 | 1일 | 추가 통계 2개 이상 집계되어 랭킹/카드에 노출 |
 
 ---
 
@@ -141,12 +151,12 @@ AuthGate
 
 | 파일 | 문제 | 수정 방향 |
 |------|------|-----------|
-| `group_repository.dart:59` | `joinGroup` 시 이미 멤버인지 확인 안 함 → `memberUids` 중복 추가 가능 | `arrayUnion` 전 `memberUids.contains(uid)` 체크 또는 Functions로 이전 |
-| `group_controller.dart:28` | 그룹 생성자 닉네임이 `'익명'` 고정 — 참여자는 `NicknameInputPage` 거치는 것과 불일치 | 생성 후 닉네임 입력 화면으로 이동하거나 `GroupCreatePage`에 닉네임 필드 추가 |
+| `group_repository.dart:59` | 해결됨: `joinGroup`이 트랜잭션에서 중복 멤버 및 정원 초과를 검증하도록 수정됨 | 후속: Functions 경유 가입으로 완전 서버 권한화 검토 |
+| `group_controller.dart:28` | 해결됨: 그룹 생성 후 닉네임 입력 화면(`/group/:groupId/nickname`)으로 이동하도록 수정됨 | 후속: 그룹 내 설정에서 닉네임 변경 기능 추가 |
 | `groupTriggers.ts` (`startGame`) | 폭탄 만료 시간 `24 * 60 * 60 * 1000` 하드코딩 — `AppConstants.defaultBombDurationSeconds`(86400)와 별도 관리됨 | Functions 환경변수 또는 Firestore config 문서로 단일 관리 |
 | `bombExpireScheduler.ts` (`onBombExploded`) | 폭발 즉시 `finished` 처리 — 다음 라운드 로직 없음. 주석("다음 라운드 시작")과 실제 동작 불일치 | 게임 설계 확정 후 라운드 지속 vs 즉시 종료 방향 결정 필요 |
 | `mission_repository.dart` | `MissionModel.isCompleted` 항상 `false` — 미션 달성 여부를 Firestore에 기록하거나 판단하는 로직 없음 | 미션별 달성 조건 정의 및 트리거 구현 전까지 UI에서 완료 표시 불가 |
-| `result_controller.dart:42` | `passCount: 0` 하드코딩 — 전달 횟수를 기록하는 Firestore 구조 없음 | `passBomb` 호출 시 별도 로그 컬렉션(`groups/{id}/passes`)에 기록 필요 |
+| `result_controller.dart:42` | 해결됨: 전달 횟수 로그(`groups/{id}/passes`) 기반으로 `passCount` 집계 반영됨 | 후속: "최장 홀딩 시간" 등 추가 통계 컬럼 확장 |
 
 ---
 
