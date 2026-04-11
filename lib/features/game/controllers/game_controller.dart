@@ -78,10 +78,11 @@ class GameController extends _$GameController {
     state = await AsyncValue.guard(() async {
       final data = <String, dynamic>{'groupId': groupId, 'itemId': itemId};
       if (days != null) data['days'] = days;
-      await ref
-          .read(functionsProvider)
-          .httpsCallable('useItem')
-          .call<dynamic, Map<String, dynamic>>(data);
+      await callHttpsCallableWithRegionFallback(
+        ref,
+        functionName: 'useItem',
+        data: data,
+      );
     });
   }
 }

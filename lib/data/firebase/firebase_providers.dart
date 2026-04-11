@@ -15,9 +15,45 @@ final firestoreProvider = Provider<FirebaseFirestore>((ref) {
   return FirebaseFirestore.instance;
 });
 
-final functionsProvider = Provider<FirebaseFunctions>((ref) {
-  return FirebaseFunctions.instance;
+final preferredFunctionsRegionProvider = Provider<String>((ref) {
+  return 'asia-northeast3';
 });
+
+final fallbackFunctionsRegionsProvider = Provider<List<String>>((ref) {
+  return const ['us-central1'];
+});
+
+final functionsProvider = Provider<FirebaseFunctions>((ref) {
+  final region = ref.watch(preferredFunctionsRegionProvider);
+  return FirebaseFunctions.instanceFor(region: region);
+});
+
+Future<HttpsCallableResult<dynamic>> callHttpsCallableWithRegionFallback(
+  Ref ref, {
+  required String functionName,
+  Object? data,
+}) async {
+  final preferredRegion = ref.read(preferredFunctionsRegionProvider);
+  final fallbackRegions = ref.read(fallbackFunctionsRegionsProvider);
+  final regions = <String>{preferredRegion, ...fallbackRegions}.toList();
+
+  for (final region in regions) {
+    try {
+      return await FirebaseFunctions.instanceFor(region: region)
+          .httpsCallable(functionName)
+          .call<dynamic>(data);
+    } on FirebaseFunctionsException catch (e) {
+      if (e.code == 'not-found') {
+        continue;
+      }
+      rethrow;
+    }
+  }
+
+  throw StateError(
+    'Callable function "$functionName" was not found in regions: ${regions.join(', ')}',
+  );
+}
 
 final messagingProvider = Provider<FirebaseMessaging>((ref) {
   return FirebaseMessaging.instance;
