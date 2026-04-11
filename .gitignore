@@ -33,6 +33,7 @@ ios/Runner.xcworkspace/xcuserdata/
 
 # Cloud Functions
 functions/node_modules/
+functions/node_modules_old/
 functions/lib/
 
 # IDE
