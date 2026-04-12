@@ -34,8 +34,11 @@ class ShopBody extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 내 인벤토리
+                _RandomBoxCard(currency: currency, groupId: groupId),
                 if (ownedInventory.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  const Divider(),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
                       const Icon(Icons.backpack_rounded,
@@ -67,11 +70,7 @@ class ShopBody extends ConsumerWidget {
                         )
                         .toList(),
                   ),
-                  const SizedBox(height: 24),
-                  const Divider(),
-                  const SizedBox(height: 16),
                 ],
-                _RandomBoxCard(currency: currency, groupId: groupId),
                 const SizedBox(height: 32),
                 const Text(
                   '아이템 목록',
@@ -294,6 +293,13 @@ class _InventoryChip extends StatelessWidget {
   final ShopItemModel item;
   final int count;
 
+  String get _displayName {
+    if (item.id == 'guardianAngel') {
+      return '수호 천사';
+    }
+    return item.name;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -309,7 +315,7 @@ class _InventoryChip extends StatelessWidget {
           ItemIcon(itemType: item.id, size: 28),
           const SizedBox(width: 8),
           Text(
-            item.name,
+            _displayName,
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
           const SizedBox(width: 10),

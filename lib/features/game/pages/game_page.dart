@@ -500,11 +500,9 @@ class _FinishedTabView extends ConsumerStatefulWidget {
 }
 
 class _FinishedTabViewState extends ConsumerState<_FinishedTabView> {
-  int _tabIndex = 2; // 홈 탭 기본
+  int _tabIndex = 0; // 홈 탭 기본
 
   static const _tabs = [
-    NavigationDestination(icon: Icon(Icons.store), label: '상점'),
-    NavigationDestination(icon: Icon(Icons.assignment), label: '미션'),
     NavigationDestination(icon: Icon(Icons.home), label: '홈'),
     NavigationDestination(icon: Icon(Icons.history), label: '로그'),
     NavigationDestination(icon: Icon(Icons.settings), label: '설정'),
@@ -521,8 +519,6 @@ class _FinishedTabViewState extends ConsumerState<_FinishedTabView> {
       body: IndexedStack(
         index: _tabIndex,
         children: [
-          ShopBody(groupId: widget.group.id),
-          MissionBody(groupId: widget.group.id),
           _FinishedHomeTab(group: widget.group),
           LogTab(groupId: widget.group.id),
           SettingsTab(groupId: widget.group.id),
