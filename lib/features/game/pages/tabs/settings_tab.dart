@@ -146,7 +146,13 @@ class SettingsTab extends ConsumerWidget {
         .read(groupControllerProvider.notifier)
         .leaveGroup(groupId: groupId);
 
-    if (context.mounted) {
+    if (!context.mounted) return;
+    final state = ref.read(groupControllerProvider);
+    if (state.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('나가기 실패: ${state.error}')),
+      );
+    } else {
       context.go(AppRoutes.home);
     }
   }

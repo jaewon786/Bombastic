@@ -36,8 +36,12 @@ class GamePage extends ConsumerWidget {
       ),
       data: (group) {
         if (group == null) {
+          // 그룹 삭제(마지막 멤버 탈퇴 등) 시 자동으로 홈으로 이동
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) context.go(AppRoutes.home);
+          });
           return const Scaffold(
-            body: Center(child: Text('그룹을 찾을 수 없습니다.')),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -141,20 +145,7 @@ class _WaitingView extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.share, size: 18),
-                label: const Text('초대 링크 공유'),
-                onPressed: () {
-                  final link = 'bombastic://join?code=${group.joinCode}';
-                  Share.share(
-                    'Bombastic에서 폭탄을 돌려요! 아래 링크로 참여하세요:\n$link',
-                    subject: 'Bombastic 초대',
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                ),
-              ),
+              _InviteLinkTile(joinCode: group.joinCode),
               const SizedBox(height: 16),
               Text(
                 '참여자 (${group.memberUids.length}/${group.maxMembers})',
@@ -378,6 +369,63 @@ class _WaitingView extends ConsumerWidget {
     } else {
       context.go(AppRoutes.home);
     }
+  }
+}
+
+// ── 초대 링크 하이퍼링크 타일 ────────────────────────────────────
+
+class _InviteLinkTile extends StatelessWidget {
+  const _InviteLinkTile({required this.joinCode});
+
+  final String joinCode;
+
+  String get _link => 'bombastic://join?code=$joinCode';
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            const Icon(Icons.link, size: 18, color: Colors.blueAccent),
+            const SizedBox(width: 8),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: _link));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('초대 링크가 복사되었습니다 🔗'),
+                      duration: Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                child: Text(
+                  _link,
+                  style: const TextStyle(
+                    color: Colors.blueAccent,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.blueAccent,
+                    fontSize: 13,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.share, size: 20),
+              tooltip: '공유',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () => Share.share(_link),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
