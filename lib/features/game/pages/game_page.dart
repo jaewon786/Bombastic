@@ -1,6 +1,7 @@
 import 'package:bomb_pass/core/router/app_router.dart';
 import 'package:bomb_pass/data/firebase/firebase_providers.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:bomb_pass/data/models/group_model.dart';
 import 'package:bomb_pass/features/game/controllers/game_controller.dart';
 import 'package:bomb_pass/features/game/pages/tabs/home_tab.dart';
@@ -139,7 +140,22 @@ class _WaitingView extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.share, size: 18),
+                label: const Text('초대 링크 공유'),
+                onPressed: () {
+                  final link = 'bombastic://join?code=${group.joinCode}';
+                  Share.share(
+                    'Bombastic에서 폭탄을 돌려요! 아래 링크로 참여하세요:\n$link',
+                    subject: 'Bombastic 초대',
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+              ),
+              const SizedBox(height: 16),
               Text(
                 '참여자 (${group.memberUids.length}/${group.maxMembers})',
                 style: const TextStyle(

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app_links/app_links.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -40,11 +41,54 @@ Future<void> main() async {
   unawaited(FcmService.initialize());
 }
 
-class BombasticApp extends ConsumerWidget {
+class BombasticApp extends ConsumerStatefulWidget {
   const BombasticApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BombasticApp> createState() => _BombasticAppState();
+}
+
+class _BombasticAppState extends ConsumerState<BombasticApp> {
+  late final AppLinks _appLinks;
+  StreamSubscription<Uri>? _linkSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _appLinks = AppLinks();
+    _initDeepLinks();
+  }
+
+  Future<void> _initDeepLinks() async {
+    // 앱이 종료된 상태에서 링크로 실행된 경우
+    final initialUri = await _appLinks.getInitialLink();
+    if (initialUri != null) {
+      _handleDeepLink(initialUri);
+    }
+
+    // 앱이 백그라운드에 있다가 링크로 포그라운드로 전환된 경우
+    _linkSub = _appLinks.uriLinkStream.listen(_handleDeepLink);
+  }
+
+  void _handleDeepLink(Uri uri) {
+    // bombastic://join?code=XXXXXX
+    if (uri.scheme == 'bombastic' && uri.host == 'join') {
+      final code = uri.queryParameters['code'];
+      if (code != null && code.isNotEmpty) {
+        final router = ref.read(appRouterProvider);
+        router.push('${AppRoutes.groupJoin}?code=$code');
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _linkSub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeModeProvider);
 

@@ -38,7 +38,9 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.groupJoin,
-        builder: (context, state) => const GroupJoinPage(),
+        builder: (context, state) => GroupJoinPage(
+          initialCode: state.uri.queryParameters['code'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.groupCreate,

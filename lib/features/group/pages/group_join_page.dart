@@ -5,14 +5,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 class GroupJoinPage extends ConsumerStatefulWidget {
-  const GroupJoinPage({super.key});
+  const GroupJoinPage({super.key, this.initialCode});
+
+  final String? initialCode;
 
   @override
   ConsumerState<GroupJoinPage> createState() => _GroupJoinPageState();
 }
 
 class _GroupJoinPageState extends ConsumerState<GroupJoinPage> {
-  final _codeController = TextEditingController();
+  late final TextEditingController _codeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _codeController = TextEditingController(
+      text: widget.initialCode?.toUpperCase() ?? '',
+    );
+  }
 
   @override
   void dispose() {
