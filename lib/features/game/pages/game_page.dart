@@ -1,20 +1,20 @@
+import 'package:bomb_pass/core/router/app_router.dart';
+import 'package:bomb_pass/data/firebase/firebase_providers.dart';
+import 'package:bomb_pass/data/models/group_model.dart';
+import 'package:bomb_pass/features/game/controllers/game_controller.dart';
+import 'package:bomb_pass/features/game/pages/tabs/home_tab.dart';
+import 'package:bomb_pass/features/game/pages/tabs/log_tab.dart';
+import 'package:bomb_pass/features/game/pages/tabs/settings_tab.dart';
+import 'package:bomb_pass/features/group/controllers/group_controller.dart';
+import 'package:bomb_pass/features/mission/pages/mission_page.dart';
+import 'package:bomb_pass/features/shop/pages/shop_page.dart';
+import 'package:bomb_pass/widgets/group_currency_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/router/app_router.dart';
-import '../../../data/firebase/firebase_providers.dart';
-import '../../../data/models/group_model.dart';
-import '../../group/controllers/group_controller.dart';
-import '../../mission/pages/mission_page.dart';
-import '../../shop/pages/shop_page.dart';
-import '../controllers/game_controller.dart';
-import 'tabs/home_tab.dart';
-import 'tabs/log_tab.dart';
-import 'tabs/settings_tab.dart';
-
 class GamePage extends ConsumerWidget {
-  const GamePage({super.key, required this.groupId});
+  const GamePage({required this.groupId, super.key});
 
   final String groupId;
 
@@ -48,27 +48,8 @@ class GamePage extends ConsumerWidget {
 
 // ── Waiting 상태 UI ──────────────────────────────────────────
 
-List<Widget> _buildGlobalActions(WidgetRef ref, String groupId) {
-  final currency = ref.watch(currentUserProvider).asData?.value?.groupCurrencies[groupId] ?? 0;
-  return [
-    Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Badge(
-        label: Text(
-          '$currency',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: Colors.orange,
-        alignment: Alignment.topRight,
-        offset: const Offset(4, -4),
-        child: const Icon(Icons.monetization_on, size: 28, color: Colors.orange),
-      ),
-    ),
-  ];
+List<Widget> _buildGlobalActions(String groupId) {
+  return [GroupCurrencyBadge(groupId: groupId)];
 }
 
 class _WaitingView extends ConsumerWidget {
@@ -85,7 +66,7 @@ class _WaitingView extends ConsumerWidget {
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.go(AppRoutes.home)),
         title: Text(group.name),
-        actions: _buildGlobalActions(ref, group.id),
+        actions: _buildGlobalActions(group.id),
       ),
       body: SafeArea(
         child: Padding(
@@ -226,7 +207,7 @@ class _PlayingTabViewState extends ConsumerState<_PlayingTabView> {
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.go(AppRoutes.home)),
         title: Text('💣 $groupName'),
-        actions: _buildGlobalActions(ref, widget.groupId),
+        actions: _buildGlobalActions(widget.groupId),
       ),
       body: IndexedStack(
         index: _tabIndex,
@@ -260,7 +241,7 @@ class _FinishedView extends ConsumerWidget {
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.go(AppRoutes.home)),
         title: Text(group.name),
-        actions: _buildGlobalActions(ref, group.id), // Added currency here as well for consistency
+        actions: _buildGlobalActions(group.id),
       ),
       body: Center(
         child: Column(

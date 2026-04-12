@@ -1,31 +1,53 @@
+import 'package:bomb_pass/core/constants/app_constants.dart';
+import 'package:bomb_pass/data/firebase/firebase_providers.dart';
+import 'package:bomb_pass/features/mission/controllers/mission_controller.dart';
+import 'package:bomb_pass/widgets/currency_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/constants/app_constants.dart';
-import '../../../data/firebase/firebase_providers.dart';
-import '../controllers/mission_controller.dart';
-
 /// 탭에서 직접 사용하는 미션 body 위젯
-class MissionBody extends ConsumerWidget {
-  const MissionBody({super.key, required this.groupId});
+class MissionBody extends ConsumerStatefulWidget {
+  const MissionBody({required this.groupId, super.key});
 
   final String groupId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MissionBody> createState() => _MissionBodyState();
+}
+
+class _MissionBodyState extends ConsumerState<MissionBody> {
+  /// 출석 성공 시 즉시 UI 반영용 로컬 플래그
+  bool _justCheckedIn = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final groupId = widget.groupId;
     final missionsAsync = ref.watch(missionsProvider);
     final checkInState = ref.watch(missionControllerProvider);
-    final currentUser = ref.watch(currentUserProvider).asData?.value;
     final serverTodayKeyAsync = ref.watch(serverTodayKeyProvider);
-    final lastCheckIn = currentUser?.lastCheckInDate;
-    final lastCheckInKey = lastCheckIn == null
-      ? null
-      : '${lastCheckIn.year.toString().padLeft(4, '0')}-${lastCheckIn.month.toString().padLeft(2, '0')}-${lastCheckIn.day.toString().padLeft(2, '0')}';
+    final lastCheckInKey = ref.watch(lastCheckInDateProvider);
     final serverTodayKey = serverTodayKeyAsync.asData?.value;
-    final alreadyCheckedIn =
-      serverTodayKey != null && lastCheckInKey == serverTodayKey;
+    final alreadyCheckedIn = _justCheckedIn ||
+        (serverTodayKey != null &&
+            lastCheckInKey != null &&
+            lastCheckInKey == serverTodayKey);
     final isCheckInButtonDisabled =
-      checkInState.isLoading || alreadyCheckedIn || serverTodayKey == null;
+        checkInState.isLoading || alreadyCheckedIn || serverTodayKey == null;
+    final buttonStyle = ElevatedButton.styleFrom(
+      backgroundColor:
+          alreadyCheckedIn ? const Color(0xFF2E7D32) : const Color(0xFFFFC94A),
+      foregroundColor:
+          alreadyCheckedIn ? Colors.white : const Color(0xFF4E342E),
+      disabledBackgroundColor:
+          alreadyCheckedIn ? const Color(0xFF2E7D32) : const Color(0xFFFFECB3),
+      disabledForegroundColor:
+          alreadyCheckedIn ? Colors.white : const Color(0xFF8D6E63),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      textStyle: const TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+      ),
+    );
 
     return Column(
       children: [
@@ -40,36 +62,49 @@ class MissionBody extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   '출석 보상은 이 그룹의 재화로 지급됩니다.',
-                  style:
-                      TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
                 const SizedBox(height: 12),
                 ElevatedButton.icon(
+                  style: buttonStyle,
                   onPressed: isCheckInButtonDisabled
                       ? null
                       : () async {
-                          await ref
+                          final success = await ref
                               .read(missionControllerProvider.notifier)
                               .checkIn(groupId: groupId);
-                          if (!context.mounted) return;
+                          if (!mounted) return;
                           final err =
                               ref.read(missionControllerProvider).error;
+                          final String message;
+                          if (err != null) {
+                            message = '출석 체크에 실패했습니다.';
+                          } else if (success) {
+                            setState(() => _justCheckedIn = true);
+                            message =
+                                '출석 완료! +${CurrencyConstants.dailyCheckInReward}💰';
+                          } else {
+                            setState(() => _justCheckedIn = true);
+                            message = '오늘은 이미 출석했습니다.';
+                          }
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                err != null
-                                    ? '$err'
-                                    : '출석 완료! +${CurrencyConstants.dailyCheckInReward}💰',
-                              ),
-                            ),
+                            SnackBar(content: Text(message)),
                           );
                         },
-                  icon: Icon(alreadyCheckedIn
-                      ? Icons.check_circle
-                      : Icons.check_circle_outline),
-                  label: Text(alreadyCheckedIn
-                      ? '오늘 출석 완료 \u2713'
-                      : '출석하기 (+${CurrencyConstants.dailyCheckInReward}💰)'),
+                  icon: checkInState.isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : alreadyCheckedIn
+                          ? const Icon(Icons.check_circle)
+                          : const CurrencyIcon(),
+                  label: Text(
+                    alreadyCheckedIn
+                        ? '출석 완료'
+                        : '출석하기 (+${CurrencyConstants.dailyCheckInReward})',
+                  ),
                 ),
                 if (serverTodayKeyAsync.isLoading)
                   const Padding(

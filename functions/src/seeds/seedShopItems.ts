@@ -50,7 +50,7 @@ const shopItems: ShopItemSeed[] = [
     type: 'swapOrder',
     usageType: 'always',
     isAvailable: true,
-    probability: 30,
+    probability: 35,
   },
   {
     id: 'shrinkDuration',
@@ -60,7 +60,7 @@ const shopItems: ShopItemSeed[] = [
     type: 'shrinkDuration',
     usageType: 'always',
     isAvailable: true,
-    probability: 25,
+    probability: 30,
   },
   {
     id: 'reverseDirection',
@@ -70,17 +70,7 @@ const shopItems: ShopItemSeed[] = [
     type: 'reverseDirection',
     usageType: 'bombHolder',
     isAvailable: true,
-    probability: 20,
-  },
-  {
-    id: 'addBomb',
-    name: '폭탄 추가',
-    description: '새로운 폭탄을 게임에 추가합니다',
-    price: 80,
-    type: 'addBomb',
-    usageType: 'always',
-    isAvailable: true,
-    probability: 15,
+    probability: 25,
   },
   {
     id: 'adjustGameDays',
@@ -90,17 +80,7 @@ const shopItems: ShopItemSeed[] = [
     type: 'adjustGameDays',
     usageType: 'always',
     isAvailable: true,
-    probability: 7,
-  },
-  {
-    id: 'enhancePenalty',
-    name: '패널티 강화',
-    description: '현재 들고 있는 폭탄의 패널티를 강화합니다',
-    price: 100,
-    type: 'enhancePenalty',
-    usageType: 'bombHolder',
-    isAvailable: true,
-    probability: 3,
+    probability: 10,
   },
 ];
 

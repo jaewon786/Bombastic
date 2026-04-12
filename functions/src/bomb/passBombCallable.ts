@@ -62,6 +62,7 @@ export const passBomb = functions.https.onCall(async (data, context) => {
     tx.set(passRef, {
       fromUid: uid,
       toUid: nextUid,
+      receivedAt: bomb.receivedAt,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
   });

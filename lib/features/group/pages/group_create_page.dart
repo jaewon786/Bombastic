@@ -94,8 +94,16 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
                         final groupId = await ref
                             .read(groupControllerProvider.notifier)
                             .createGroup(name: name, maxMembers: _maxMembers);
-                        if (groupId != null && context.mounted) {
-                          context.go('${AppRoutes.game}/$groupId');
+                        if (!context.mounted) return;
+                        if (groupId != null) {
+                          context.go('${AppRoutes.nickname}/$groupId');
+                        } else {
+                          final err = ref.read(groupControllerProvider).error;
+                          if (err != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('$err')),
+                            );
+                          }
                         }
                       },
                 child: state.isLoading

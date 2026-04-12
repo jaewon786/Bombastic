@@ -59,11 +59,12 @@ export const checkBombExpiry = functions
         explodedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // 그룹 문서에 패널티 카운트 증가
+      // 그룹 문서에 패널티 카운트 증가 (hasPenalty 아이템 적용 시 2배)
       const groupId = data.groupId as string;
       const groupRef = db.collection('groups').doc(groupId);
+      const penaltyAmount = data.hasPenalty === true ? 2 : 1;
       batch.update(groupRef, {
-        [`penaltyCount.${holderUid}`]: admin.firestore.FieldValue.increment(1),
+        [`penaltyCount.${holderUid}`]: admin.firestore.FieldValue.increment(penaltyAmount),
       });
     }
 

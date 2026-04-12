@@ -57,46 +57,6 @@ export const onGroupMemberJoined = functions.firestore
   });
 
 /**
- * 그룹 생성 시 초기 데이터 세팅 (Callable Function).
- */
-export const createGroup = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', '로그인이 필요합니다.');
-  }
-
-  const { joinCode } = data as { joinCode: string };
-  if (!joinCode || joinCode.length !== 6) {
-    throw new functions.https.HttpsError('invalid-argument', '올바른 참여코드가 필요합니다.');
-  }
-
-  const uid = context.auth.uid;
-
-  // 중복 코드 체크 (클라이언트 생성 방식 유지; 충돌 시 클라이언트가 재시도)
-  const existing = await db
-    .collection('groups')
-    .where('joinCode', '==', joinCode.toUpperCase())
-    .where('status', '==', 'waiting')
-    .limit(1)
-    .get();
-  if (!existing.empty) {
-    throw new functions.https.HttpsError('already-exists', '이미 사용 중인 참여코드입니다. 다시 시도해 주세요.');
-  }
-
-  const groupRef = db.collection('groups').doc();
-
-  await groupRef.set({
-    id: groupRef.id,
-    joinCode: joinCode.toUpperCase(),
-    memberUids: [uid],
-    status: 'waiting',
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    penaltyCount: {},
-  });
-
-  return { groupId: groupRef.id };
-});
-
-/**
  * 방장이 게임을 시작하는 Callable Function.
  */
 export const startGame = functions.https.onCall(async (data, context) => {

@@ -1,7 +1,6 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-import { bombDefaultDurationMs } from '../core/gameConfig';
 
 const db = admin.firestore();
 
@@ -28,7 +27,8 @@ export const useItem = functions.https.onCall(async (data, context) => {
   // ── 유저 소유 여부 확인 ──────────────────────────────────────
   const userRef = db.collection('users').doc(uid);
   const userSnap = await userRef.get();
-  const ownedItems = (userSnap.data()?.ownedItemIds as string[]) ?? [];
+  const groupOwned = (userSnap.data()?.groupOwnedItemIds as Record<string, string[]> | undefined) ?? {};
+  const ownedItems = groupOwned[groupId] ?? [];
   if (!ownedItems.includes(itemId)) {
     throw new functions.https.HttpsError('permission-denied', '해당 아이템을 보유하지 않았습니다.');
   }
@@ -108,46 +108,6 @@ export const useItem = functions.https.onCall(async (data, context) => {
       break;
     }
 
-    case 'enhancePenalty': {
-      // 현재 폭탄에 패널티 강화 플래그 추가
-      if (!activeBombDoc) {
-        throw new functions.https.HttpsError('not-found', '활성 폭탄이 없습니다.');
-      }
-      batch.update(activeBombDoc.ref, { hasPenalty: true });
-      break;
-    }
-
-    case 'addBomb': {
-      // 랜덤 멤버(현재 보유자 제외)에게 새 폭탄 추가
-      const holderUid = activeBomb?.holderUid as string | undefined;
-      const eligible = members.filter((m) => m !== holderUid);
-      if (eligible.length === 0) {
-        throw new functions.https.HttpsError('failed-precondition', '새 폭탄을 전달할 멤버가 없습니다.');
-      }
-      const target = eligible[Math.floor(Math.random() * eligible.length)];
-      extraResult = { targetUid: target };
-      const now2 = admin.firestore.Timestamp.now();
-      const newBombRef = db
-        .collection('groups')
-        .doc(groupId)
-        .collection('bombs')
-        .doc();
-      batch.set(newBombRef, {
-        id: newBombRef.id,
-        groupId,
-        holderUid: target,
-        receivedAt: now2,
-        expiresAt: admin.firestore.Timestamp.fromDate(
-          new Date(now2.toMillis() + bombDefaultDurationMs),
-        ),
-        status: 'active',
-        round: 1,
-        explodedUid: null,
-        hasPenalty: false,
-      });
-      break;
-    }
-
     case 'adjustGameDays': {
       // 게임 전체 만료 시간 ±N일 조정 (group.gameExpiresAt 기준)
       const adjustDays = typeof days === 'number' ? days : 1;
@@ -186,7 +146,7 @@ export const useItem = functions.https.onCall(async (data, context) => {
 
   // ── 인벤토리에서 아이템 제거 ─────────────────────────────────
   batch.update(userRef, {
-    ownedItemIds: admin.firestore.FieldValue.arrayRemove(itemId),
+    [`groupOwnedItemIds.${groupId}`]: admin.firestore.FieldValue.arrayRemove(itemId),
   });
 
   await batch.commit();

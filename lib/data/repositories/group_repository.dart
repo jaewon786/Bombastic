@@ -1,9 +1,8 @@
+import 'package:bomb_pass/core/constants/app_constants.dart';
+import 'package:bomb_pass/data/firebase/firebase_providers.dart';
+import 'package:bomb_pass/data/models/group_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../core/constants/app_constants.dart';
-import '../firebase/firebase_providers.dart';
-import '../models/group_model.dart';
 
 part 'group_repository.g.dart';
 
@@ -97,6 +96,27 @@ class GroupRepository {
     await _groups.doc(groupId).update({
       'memberNicknames.$uid': nickname,
     });
+  }
+
+  /// 그룹 문서와 유저 문서의 그룹별 닉네임을 함께 저장
+  Future<void> saveGroupNickname({
+    required String groupId,
+    required String uid,
+    required String nickname,
+  }) async {
+    final groupRef = _groups.doc(groupId);
+    final userRef = _firestore.collection(AppConstants.usersCollection).doc(uid);
+
+    final batch = _firestore.batch()
+      ..update(groupRef, {
+        'memberNicknames.$uid': nickname,
+      })
+      ..set(userRef, {
+        'uid': uid,
+        'groupNicknames': {groupId: nickname},
+      }, SetOptions(merge: true));
+
+    await batch.commit();
   }
 
   /// 그룹 실시간 스트림 (onSnapshot)

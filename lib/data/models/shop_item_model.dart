@@ -6,8 +6,6 @@ part 'shop_item_model.g.dart';
 /// 아이템 종류
 enum ItemType {
   swapOrder,
-  addBomb,
-  enhancePenalty,
   shrinkDuration,
   reverseDirection,
   adjustGameDays,

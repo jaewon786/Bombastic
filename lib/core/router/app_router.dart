@@ -7,6 +7,7 @@ import '../../features/home/views/home_page.dart';
 import '../../features/game/pages/game_page.dart';
 import '../../features/group/pages/group_join_page.dart';
 import '../../features/group/pages/group_create_page.dart';
+import '../../features/group/pages/nickname_input_page.dart';
 import '../../features/result/pages/result_page.dart';
 
 part 'app_router.g.dart';
@@ -16,6 +17,7 @@ abstract final class AppRoutes {
   static const home = '/home';
   static const groupJoin = '/group/join';
   static const groupCreate = '/group/create';
+  static const nickname = '/group/nickname';  // /group/nickname/:groupId
   static const game = '/game';       // /game/:groupId
   static const result = '/result';   // /result/:groupId
 }
@@ -41,6 +43,12 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.groupCreate,
         builder: (context, state) => const GroupCreatePage(),
+      ),
+      GoRoute(
+        path: '${AppRoutes.nickname}/:groupId',
+        builder: (context, state) => NicknameInputPage(
+          groupId: state.pathParameters['groupId']!,
+        ),
       ),
       GoRoute(
         path: '${AppRoutes.game}/:groupId',

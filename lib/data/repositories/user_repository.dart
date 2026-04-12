@@ -1,10 +1,10 @@
 // 변경 후 dart run build_runner build --delete-conflicting-outputs 실행 필요
+import 'package:bomb_pass/core/constants/app_constants.dart';
+import 'package:bomb_pass/data/firebase/firebase_providers.dart';
+import 'package:bomb_pass/data/models/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../core/constants/app_constants.dart';
-import '../firebase/firebase_providers.dart';
-import '../models/user_model.dart';
 
 part 'user_repository.g.dart';
 
@@ -30,9 +30,20 @@ class UserRepository {
 
   /// 유저 문서 실시간 스트림
   Stream<UserModel?> watchUser(String uid) {
+    debugPrint('[watchUser] 스트림 구독 시작: uid=$uid');
     return _users.doc(uid).snapshots().map((snap) {
+      debugPrint('[watchUser] 스냅샷 수신: exists=${snap.exists}, fromCache=${snap.metadata.isFromCache}');
       if (!snap.exists || snap.data() == null) return null;
-      return UserModel.fromJson(snap.data()!);
+      try {
+        final user = UserModel.fromJson(snap.data()!);
+        debugPrint('[watchUser] 파싱 성공: currencies=${user.groupCurrencies}, lastCheckIn=${user.lastCheckInDate}');
+        return user;
+      } catch (e, st) {
+        debugPrint('[watchUser] UserModel.fromJson 파싱 실패: $e');
+        debugPrint('[watchUser] stack: $st');
+        debugPrint('[watchUser] raw data: ${snap.data()}');
+        return null;
+      }
     });
   }
 
@@ -49,6 +60,7 @@ class UserRepository {
   }) async {
     try {
       await _users.doc(uid).update({
+        'uid': uid,
         'groupIds': FieldValue.arrayUnion([groupId]),
         'groupNicknames.$groupId': nickname,
       });
@@ -75,6 +87,7 @@ class UserRepository {
   }) async {
     try {
       await _users.doc(uid).update({
+        'uid': uid,
         'groupNicknames.$groupId': nickname,
       });
     } on FirebaseException catch (e) {
@@ -99,6 +112,7 @@ class UserRepository {
   }) async {
     try {
       await _users.doc(uid).update({
+        'uid': uid,
         'groupIds': FieldValue.arrayRemove([groupId]),
         'groupNicknames.$groupId': FieldValue.delete(),
       });

@@ -52,7 +52,7 @@ final class MissionsProvider
   }
 }
 
-String _$missionsHash() => r'b4dbdbfdf6c7f32936f869995b377a4d4dab9bf2';
+String _$missionsHash() => r'7ce22f7a4349a04178004350ddc429f77fac9f4c';
 
 @ProviderFor(MissionController)
 final missionControllerProvider = MissionControllerProvider._();
@@ -86,7 +86,7 @@ final class MissionControllerProvider
   }
 }
 
-String _$missionControllerHash() => r'6618c7e8c8f72166a62dad31bb97bd0441be231a';
+String _$missionControllerHash() => r'8b2472c8e3b4e2c65a42481f1de9486381da0679';
 
 abstract class _$MissionController extends $Notifier<AsyncValue<void>> {
   AsyncValue<void> build();

@@ -22,19 +22,6 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid in groupData(groupId).memberUids;
     }
 
-    function isGroupProtectedUnchanged() {
-      return request.resource.data.id == resource.data.id
-        && request.resource.data.name == resource.data.name
-        && request.resource.data.joinCode == resource.data.joinCode
-        && request.resource.data.hostUid == resource.data.hostUid
-        && request.resource.data.maxMembers == resource.data.maxMembers
-        && request.resource.data.status == resource.data.status
-        && request.resource.data.createdAt == resource.data.createdAt
-        && request.resource.data.gameStartedAt == resource.data.gameStartedAt
-        && request.resource.data.gameEndedAt == resource.data.gameEndedAt
-        && request.resource.data.gameExpiresAt == resource.data.gameExpiresAt;
-    }
-
     match /users/{uid} {
       allow read: if isOwner(uid);
       allow create: if isOwner(uid)
@@ -62,7 +49,6 @@ service cloud.firestore {
                     && request.resource.data.status == 'waiting';
 
       allow update: if isSignedIn()
-                    && isGroupProtectedUnchanged()
                     && (
                       // Case 1: joinGroup - 자기 자신 1명만 추가
                       (
@@ -112,6 +98,12 @@ service cloud.firestore {
 
       // 아이템 사용 로그: 멤버 읽기 전용 (Cloud Functions만 기록)
       match /itemUsages/{usageId} {
+        allow read: if isGroupMember(groupId);
+        allow create, update, delete: if false;
+      }
+
+      // 게임 결과: 멤버 읽기 전용 (Cloud Functions만 기록)
+      match /results/{resultId} {
         allow read: if isGroupMember(groupId);
         allow create, update, delete: if false;
       }

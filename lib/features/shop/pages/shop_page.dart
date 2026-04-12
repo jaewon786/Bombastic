@@ -15,8 +15,7 @@ class ShopBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final itemsAsync = ref.watch(shopItemsProvider);
-    final user = ref.watch(currentUserProvider).asData?.value;
-    final currency = user?.groupCurrencies[groupId] ?? 0;
+    final currency = ref.watch(groupCurrencyProvider(groupId));
 
     return itemsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

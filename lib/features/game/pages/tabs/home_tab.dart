@@ -1,15 +1,15 @@
+import 'package:bomb_pass/data/firebase/firebase_providers.dart';
+import 'package:bomb_pass/data/models/shop_item_model.dart';
+import 'package:bomb_pass/features/game/controllers/game_controller.dart';
+import 'package:bomb_pass/features/game/controllers/timer_controller.dart';
+import 'package:bomb_pass/features/group/controllers/group_controller.dart';
+import 'package:bomb_pass/features/shop/controllers/shop_controller.dart';
+import 'package:bomb_pass/widgets/item_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../data/firebase/firebase_providers.dart';
-import '../../../../data/models/shop_item_model.dart';
-import '../../../shop/controllers/shop_controller.dart';
-import '../../controllers/game_controller.dart';
-import '../../controllers/timer_controller.dart';
-import '../../../group/controllers/group_controller.dart';
-
 class HomeTab extends ConsumerWidget {
-  const HomeTab({super.key, required this.groupId});
+  const HomeTab({required this.groupId, super.key});
 
   final String groupId;
 
@@ -47,7 +47,7 @@ class _GameBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final timer = ref.watch(bombTimerProvider(groupId)).asData?.value ?? '00:00:00';
+    final timer = ref.watch(bombTimerProvider(groupId));
     final isMyTurn = ref.watch(isMyTurnProvider(groupId));
     final uid = ref.watch(currentUidProvider);
     final group = ref.watch(watchGroupProvider(groupId)).asData?.value;
@@ -121,7 +121,7 @@ class _GameBody extends ConsumerWidget {
           const SizedBox(height: 4),
           Center(
             child: Text(
-              isMyTurn ? '⚠️ 빨리 전달하세요!' : '대기 중...',
+              isMyTurn ? '빨리 전달하세요!' : '대기 중...',
               style: TextStyle(
                 fontSize: 16,
                 color: isMyTurn ? Colors.red : Colors.grey,
@@ -146,7 +146,8 @@ class _GameBody extends ConsumerWidget {
                 scrollDirection: Axis.horizontal,
                 itemCount: memberUids.length,
                 separatorBuilder: (_, __) => const Center(
-                  child: Icon(Icons.chevron_right, size: 14, color: Colors.grey),
+                  child:
+                      Icon(Icons.chevron_right, size: 14, color: Colors.grey),
                 ),
                 itemBuilder: (_, i) {
                   final mUid = memberUids[i];
@@ -160,17 +161,15 @@ class _GameBody extends ConsumerWidget {
                       color: isHolder ? Colors.red : Colors.transparent,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color:
-                            isHolder ? Colors.red : Colors.grey.shade300,
+                        color: isHolder ? Colors.red : Colors.grey.shade300,
                       ),
                     ),
                     child: Text(
                       isMe ? '$nick(나)' : nick,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: isHolder
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                        fontWeight:
+                            isHolder ? FontWeight.bold : FontWeight.normal,
                         color: isHolder ? Colors.white : null,
                       ),
                     ),
@@ -178,6 +177,13 @@ class _GameBody extends ConsumerWidget {
                 },
               ),
             ),
+            const SizedBox(height: 16),
+          ],
+
+          // 아이템 인벤토리 (전달 버튼 위)
+          if (usableItems.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            _ItemBar(items: usableItems, groupId: groupId),
             const SizedBox(height: 16),
           ],
 
@@ -198,42 +204,58 @@ class _GameBody extends ConsumerWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-
-          // 아이템 인벤토리
-          if (usableItems.isNotEmpty) ...[
-            const SizedBox(height: 20),
-            const Divider(),
-            Row(
-              children: [
-                const Text(
-                  '🎒 사용 가능한 아이템',
-                  style: TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '(${usableItems.length}개)',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: usableItems
-                  .map((item) => _ItemChip(item: item, groupId: groupId))
-                  .toList(),
-            ),
-          ],
         ],
       ),
     );
   }
 }
 
-class _ItemChip extends ConsumerWidget {
-  const _ItemChip({required this.item, required this.groupId});
+/// 아이템 가로 스크롤 바
+class _ItemBar extends ConsumerWidget {
+  const _ItemBar({required this.items, required this.groupId});
+
+  final List<ShopItemModel> items;
+  final String groupId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.backpack_rounded, size: 16, color: Colors.grey),
+            const SizedBox(width: 4),
+            const Text(
+              '아이템',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '${items.length}개',
+              style: const TextStyle(fontSize: 11, color: Colors.grey),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 72,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: items.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (_, i) =>
+                _ItemCard(item: items[i], groupId: groupId),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 개별 아이템 카드
+class _ItemCard extends ConsumerWidget {
+  const _ItemCard({required this.item, required this.groupId});
 
   final ShopItemModel item;
   final String groupId;
@@ -242,14 +264,20 @@ class _ItemChip extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isLoading = ref.watch(gameControllerProvider).isLoading;
 
-    return OutlinedButton(
-      onPressed: isLoading
+    return GestureDetector(
+      onTap: isLoading
           ? null
           : () async {
               final confirmed = await showDialog<bool>(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: Text(item.name),
+                  title: Row(
+                    children: [
+                      ItemIcon(itemType: item.id, size: 36),
+                      const SizedBox(width: 12),
+                      Expanded(child: Text(item.name)),
+                    ],
+                  ),
                   content: Text(item.description),
                   actions: [
                     TextButton(
@@ -281,7 +309,27 @@ class _ItemChip extends ConsumerWidget {
                 }
               }
             },
-      child: Text(item.name, style: const TextStyle(fontSize: 13)),
+      child: Container(
+        width: 72,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ItemIcon(itemType: item.id),
+            const SizedBox(height: 4),
+            Text(
+              item.name,
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

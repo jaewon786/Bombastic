@@ -134,7 +134,7 @@ AuthGate
 - [x] AuthGate — 로그인 상태 실시간 감지 및 홈 화면 라우팅 연동
 - [x] 홈 화면 구현 — 참여 중인 그룹 목록뷰 (그룹명 / 내 닉네임 / 간단 현황)
 - [x] 그룹 생성 / 참여코드 입력 화면 구현
-- [x] 그룹 참여 시점에 그룹별 닉네임 입력 화면 추가 (`NicknameInputPage`, `/group/:groupId/nickname`)
+- [x] 그룹 참여 시점에 그룹별 닉네임 입력 화면 추가 (`NicknameInputPage`, `/group/nickname/:groupId`)
 - [x] 다중 그룹 참여 지원 — `UserModel`에 `groupIds` 리스트 + `groupNicknames` 맵 추가
 - [x] 대기실 별도 라우트 제거 — 게임 화면 내 `waiting` 상태 UI로 처리 (`_WaitingView`)
 - [x] 대기실 상태 — 방장 권한 판단 (첫 번째 memberUid)
@@ -150,8 +150,8 @@ AuthGate
 - [x] `onGroupMemberJoined` 트리거 — 고정 4명 조건 → `maxMembers` 동적 비교로 수정
 - [x] Firestore 보안 규칙 파일 생성 (`firestore.rules`) — 내용은 아직 미완성
 - [x] Firestore `shopItems` 시드 스크립트 추가 (`functions/src/seeds/`)
-- [ ] Cloud Functions 배포 및 에뮬레이터 테스트
-- [ ] `checkBombExpiry` 스케줄러 동작 확인 (1분 주기)
+- [x] Cloud Functions 배포 완료 (2026-04-12, likelion-holycow, us-central1)
+- [x] `checkBombExpiry` 스케줄러 동작 확인 (1분 주기)
 - [x] `firestore.rules` 보안 규칙 완성
 - [x] `startGame` Function의 폭탄 만료 시간 하드코딩 제거 — Functions 공통 설정(`BOMB_DEFAULT_DURATION_SECONDS`, 기본 86400초)으로 동기화
 - [x] FCM 채널 ID 통일 (`bombastic_channel`) — Android 기본 채널 + 클라이언트 채널 생성 반영
@@ -166,8 +166,8 @@ AuthGate
 - [x] 아이템 속성 분리 구현: ① 폭탄 보유 중 전용 / ② 상시 사용 가능
 - [x] 아이템 효과 구현 (순서 섞기, 방향 바꾸기, 제한시간 단축, 폭탄 추가, 패널티 추가, 게임 기간 n일 증감 등)
 - [x] 아이템 사용 UI — 인벤토리/사용 버튼 구현
-- [ ] 미션 완료 판단 트리거 — `isCompleted` 항상 `false`, 달성 검증 로직 없음
-- [ ] 출석 체크 중복 방지 확인 (서버타임스탬프 기준)
+- [x] 미션 완료 판단 트리거 — `onPassCreated`/`onUserUpdated` Firestore trigger로 달성 검사 + `completedMissionIds` 업데이트
+- [x] 출석 체크 중복 방지 확인 (서버 todayKey 기준, Cloud Function fallback 포함)
 
 ### 상점 · 미션
 - [ ] 상점 방식 결정 후 구현 → 랜덤박스 서버 위임 구현 완료, 개별 구매/정책 확정은 미결
@@ -209,7 +209,7 @@ AuthGate
 | `group_repository.dart:59` | 해결됨: `joinGroup`이 트랜잭션에서 중복 멤버 및 정원 초과를 검증하도록 수정됨 | 후속: Functions 경유 가입으로 완전 서버 권한화 검토 |
 | `group_controller.dart:28` | 해결됨: 그룹 생성 후 닉네임 입력 화면(`/group/:groupId/nickname`)으로 이동하도록 수정됨 | 후속: 그룹 내 설정에서 닉네임 변경 기능 추가 |
 | `bombExpireScheduler.ts` (`onBombExploded`) | 해결됨: 주석 표현을 실제 동작(폭발 즉시 종료)과 일치하게 수정 | 7일 경과 종료는 `checkGameExpiry`가 별도 처리 |
-| `mission_repository.dart` | `MissionModel.isCompleted` 항상 `false` — 미션 달성 여부를 Firestore에 기록하거나 판단하는 로직 없음 | 미션별 달성 조건 정의 및 트리거 구현 전까지 UI에서 완료 표시 불가 |
+| `mission_repository.dart` | 해결됨: `onPassCreated`/`onUserUpdated` Firestore trigger로 미션 달성 검사 + `completedMissionIds` 자동 업데이트 구현 | 후속: 미션 종류 확장 시 `missionTriggers.ts`에 검사 로직 추가 |
 | `result_controller.dart` | 해결됨: `passCount` + `maxHoldingMinutes` + `itemUsedCount` 집계 반영됨 | 후속: 통계 정확도 회귀 테스트 추가 권장 |
 | `groupTriggers.ts` (`startGame`) | 해결됨: 폭탄 만료 시간이 Functions 공통 설정(`BOMB_DEFAULT_DURATION_SECONDS`)을 사용하도록 변경됨 | 후속: Flutter `AppConstants.defaultBombDurationSeconds`와 운영 환경값 문서화 |
 

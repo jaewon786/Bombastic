@@ -34,8 +34,6 @@ Map<String, dynamic> _$ShopItemModelToJson(_ShopItemModel instance) =>
 
 const _$ItemTypeEnumMap = {
   ItemType.swapOrder: 'swapOrder',
-  ItemType.addBomb: 'addBomb',
-  ItemType.enhancePenalty: 'enhancePenalty',
   ItemType.shrinkDuration: 'shrinkDuration',
   ItemType.reverseDirection: 'reverseDirection',
   ItemType.adjustGameDays: 'adjustGameDays',

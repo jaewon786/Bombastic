@@ -53,8 +53,16 @@ class _GroupJoinPageState extends ConsumerState<GroupJoinPage> {
                         final groupId = await groupCtrl.joinGroup(
                           _codeController.text.trim(),
                         );
-                        if (groupId != null && context.mounted) {
-                          context.go('${AppRoutes.game}/$groupId');
+                        if (!context.mounted) return;
+                        if (groupId != null) {
+                          context.go('${AppRoutes.nickname}/$groupId');
+                        } else {
+                          final err = ref.read(groupControllerProvider).error;
+                          if (err != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('$err')),
+                            );
+                          }
                         }
                       },
                 child: state.isLoading

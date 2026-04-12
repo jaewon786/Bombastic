@@ -84,6 +84,7 @@ export const openLootBox = functions.https.onCall(async (data, context) => {
     tx.update(userRef, {
       [`groupCurrencies.${groupId}`]: remainingCurrency,
       [`groupOwnedItemIds.${groupId}`]: admin.firestore.FieldValue.arrayUnion(obtained.id),
+      lootBoxCount: admin.firestore.FieldValue.increment(1),
     });
   });
 
