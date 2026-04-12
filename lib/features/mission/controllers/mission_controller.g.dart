@@ -8,12 +8,12 @@ part of 'mission_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// 미션 목록 (실시간, 유저의 completedMissionIds 반영)
+/// 미션 목록 (실시간, 그룹별 completedMissionIds 반영)
 
 @ProviderFor(missions)
-final missionsProvider = MissionsProvider._();
+final missionsProvider = MissionsFamily._();
 
-/// 미션 목록 (실시간, 유저의 completedMissionIds 반영)
+/// 미션 목록 (실시간, 그룹별 completedMissionIds 반영)
 
 final class MissionsProvider
     extends
@@ -25,20 +25,27 @@ final class MissionsProvider
     with
         $FutureModifier<List<MissionModel>>,
         $StreamProvider<List<MissionModel>> {
-  /// 미션 목록 (실시간, 유저의 completedMissionIds 반영)
-  MissionsProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'missionsProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+  /// 미션 목록 (실시간, 그룹별 completedMissionIds 반영)
+  MissionsProvider._({
+    required MissionsFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'missionsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$missionsHash();
+
+  @override
+  String toString() {
+    return r'missionsProvider'
+        ''
+        '($argument)';
+  }
 
   @$internal
   @override
@@ -48,11 +55,44 @@ final class MissionsProvider
 
   @override
   Stream<List<MissionModel>> create(Ref ref) {
-    return missions(ref);
+    final argument = this.argument as String;
+    return missions(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MissionsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
   }
 }
 
-String _$missionsHash() => r'7ce22f7a4349a04178004350ddc429f77fac9f4c';
+String _$missionsHash() => r'dbfaad70854ace06787003e2f053bfa7dcba315a';
+
+/// 미션 목록 (실시간, 그룹별 completedMissionIds 반영)
+
+final class MissionsFamily extends $Family
+    with $FunctionalFamilyOverride<Stream<List<MissionModel>>, String> {
+  MissionsFamily._()
+    : super(
+        retry: null,
+        name: r'missionsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 미션 목록 (실시간, 그룹별 completedMissionIds 반영)
+
+  MissionsProvider call(String groupId) =>
+      MissionsProvider._(argument: groupId, from: this);
+
+  @override
+  String toString() => r'missionsProvider';
+}
 
 @ProviderFor(MissionController)
 final missionControllerProvider = MissionControllerProvider._();

@@ -22,10 +22,10 @@ class _MissionBodyState extends ConsumerState<MissionBody> {
   @override
   Widget build(BuildContext context) {
     final groupId = widget.groupId;
-    final missionsAsync = ref.watch(missionsProvider);
+    final missionsAsync = ref.watch(missionsProvider(groupId));
     final checkInState = ref.watch(missionControllerProvider);
     final serverTodayKeyAsync = ref.watch(serverTodayKeyProvider);
-    final lastCheckInKey = ref.watch(lastCheckInDateProvider);
+    final lastCheckInKey = ref.watch(lastCheckInDateProvider(groupId));
     final serverTodayKey = serverTodayKeyAsync.asData?.value;
     final alreadyCheckedIn = _justCheckedIn ||
         (serverTodayKey != null &&

@@ -130,17 +130,23 @@ final groupOwnedItemCountsProvider =
   return counts;
 });
 
-/// 마지막 출석 날짜 (String, e.g. "2026-04-12")
-final lastCheckInDateProvider = Provider<String?>((ref) {
+/// 그룹별 마지막 출석 날짜 (String, e.g. "2026-04-12")
+final lastCheckInDateProvider =
+    Provider.family<String?, String>((ref, groupId) {
   final data = ref.watch(_rawUserDocProvider).asData?.value;
   if (data == null) return null;
-  return data['lastCheckInDate'] as String?;
+  final groupCheckIns =
+      data['groupLastCheckInDate'] as Map<String, dynamic>? ?? {};
+  return groupCheckIns[groupId] as String?;
 });
 
-/// 완료한 미션 ID 목록
-final completedMissionIdsProvider = Provider<List<String>>((ref) {
+/// 그룹별 완료한 미션 ID 목록
+final completedMissionIdsProvider =
+    Provider.family<List<String>, String>((ref, groupId) {
   final data = ref.watch(_rawUserDocProvider).asData?.value;
   if (data == null) return [];
-  final list = data['completedMissionIds'] as List<dynamic>?;
+  final groupMissions =
+      data['groupCompletedMissionIds'] as Map<String, dynamic>? ?? {};
+  final list = groupMissions[groupId] as List<dynamic>?;
   return list?.cast<String>() ?? [];
 });

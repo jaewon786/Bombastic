@@ -17,10 +17,10 @@ final serverTodayKeyProvider = FutureProvider<String>((ref) async {
   }
 });
 
-/// 미션 목록 (실시간, 유저의 completedMissionIds 반영)
+/// 미션 목록 (실시간, 그룹별 completedMissionIds 반영)
 @riverpod
-Stream<List<MissionModel>> missions(Ref ref) {
-  final completedIds = ref.watch(completedMissionIdsProvider);
+Stream<List<MissionModel>> missions(Ref ref, String groupId) {
+  final completedIds = ref.watch(completedMissionIdsProvider(groupId));
   return ref.watch(missionRepositoryProvider).watchMissions().map(
         (missions) => missions
             .map((m) => m.copyWith(isCompleted: completedIds.contains(m.id)))

@@ -85,10 +85,12 @@ async function evaluateMissions(uid: string, groupId: string): Promise<string[]>
   // 유저 데이터 조회
   const userSnap = await userRef.get();
   const userData = userSnap.data();
-  const completedIds: string[] = userData?.completedMissionIds ?? [];
+  const groupCompletedMissions: Record<string, string[]> = userData?.groupCompletedMissionIds ?? {};
+  const completedIds: string[] = groupCompletedMissions[groupId] ?? [];
   const ownedItems: Record<string, string[]> = userData?.groupOwnedItemIds ?? {};
-  const hasAnyItem = Object.values(ownedItems).some((ids) => ids.length > 0);
-  const lootBoxCount: number = userData?.lootBoxCount ?? 0;
+  const hasAnyItem = (ownedItems[groupId] ?? []).length > 0;
+  const groupLootBoxCounts: Record<string, number> = userData?.groupLootBoxCount ?? {};
+  const lootBoxCount: number = groupLootBoxCounts[groupId] ?? 0;
 
   const ctx: MissionContext = { passCount, hasAnyItem, lootBoxCount, hasQuickPass };
 
@@ -103,9 +105,9 @@ async function evaluateMissions(uid: string, groupId: string): Promise<string[]>
 
   if (newlyCompleted.length === 0) return [];
 
-  // 보상 지급 + completedMissionIds 업데이트
+  // 보상 지급 + completedMissionIds 업데이트 (그룹별)
   await userRef.update({
-    completedMissionIds: admin.firestore.FieldValue.arrayUnion(...newlyCompleted),
+    [`groupCompletedMissionIds.${groupId}`]: admin.firestore.FieldValue.arrayUnion(...newlyCompleted),
     [`groupCurrencies.${groupId}`]: admin.firestore.FieldValue.increment(
       MISSION_REWARD * newlyCompleted.length,
     ),
@@ -141,32 +143,42 @@ export const onUserUpdated = functions.firestore
     const before = change.before.data();
     const after = change.after.data();
 
-    // completedMissionIds 변경이면 재귀 방지
-    const beforeCompleted = JSON.stringify(before.completedMissionIds ?? []);
-    const afterCompleted = JSON.stringify(after.completedMissionIds ?? []);
+    // groupCompletedMissionIds 변경이면 재귀 방지
+    const beforeCompleted = JSON.stringify(before.groupCompletedMissionIds ?? {});
+    const afterCompleted = JSON.stringify(after.groupCompletedMissionIds ?? {});
     if (beforeCompleted !== afterCompleted) return;
 
-    // groupOwnedItemIds 또는 lootBoxCount 변경 확인
+    // groupOwnedItemIds 또는 groupLootBoxCount 변경 확인
     const itemsChanged =
       JSON.stringify(before.groupOwnedItemIds ?? {}) !==
       JSON.stringify(after.groupOwnedItemIds ?? {});
     const lootBoxChanged =
-      (before.lootBoxCount ?? 0) !== (after.lootBoxCount ?? 0);
+      JSON.stringify(before.groupLootBoxCount ?? {}) !==
+      JSON.stringify(after.groupLootBoxCount ?? {});
 
     if (!itemsChanged && !lootBoxChanged) return;
 
     const uid = context.params.uid;
 
-    // 아이템이 추가된 그룹 찾기
+    // 변경된 그룹 찾기
     const afterOwned: Record<string, string[]> = after.groupOwnedItemIds ?? {};
     const beforeOwned: Record<string, string[]> = before.groupOwnedItemIds ?? {};
+    const afterLootBox: Record<string, number> = after.groupLootBoxCount ?? {};
+    const beforeLootBox: Record<string, number> = before.groupLootBoxCount ?? {};
 
+    const changedGroupIds = new Set<string>();
     for (const groupId of Object.keys(afterOwned)) {
-      const beforeIds = beforeOwned[groupId] ?? [];
-      const afterIds = afterOwned[groupId] ?? [];
-      if (afterIds.length > beforeIds.length) {
-        await evaluateMissions(uid, groupId);
-        break;
+      if ((afterOwned[groupId] ?? []).length > (beforeOwned[groupId] ?? []).length) {
+        changedGroupIds.add(groupId);
       }
+    }
+    for (const groupId of Object.keys(afterLootBox)) {
+      if ((afterLootBox[groupId] ?? 0) > (beforeLootBox[groupId] ?? 0)) {
+        changedGroupIds.add(groupId);
+      }
+    }
+
+    for (const groupId of changedGroupIds) {
+      await evaluateMissions(uid, groupId);
     }
   });

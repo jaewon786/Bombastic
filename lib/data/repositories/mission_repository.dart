@@ -117,13 +117,15 @@ class MissionRepository {
 
     await _firestore.runTransaction((tx) async {
       final snap = await tx.get(userRef);
-      final lastCheckIn = snap.data()?['lastCheckInDate'] as String?;
+      final groupCheckIns =
+          snap.data()?['groupLastCheckInDate'] as Map<String, dynamic>? ?? {};
+      final lastCheckIn = groupCheckIns[groupId] as String?;
       if (lastCheckIn == todayKey) {
         alreadyCheckedIn = true;
         return;
       }
       tx.update(userRef, {
-        'lastCheckInDate': todayKey,
+        'groupLastCheckInDate.$groupId': todayKey,
         'groupCurrencies.$groupId':
             FieldValue.increment(CurrencyConstants.dailyCheckInReward),
       });

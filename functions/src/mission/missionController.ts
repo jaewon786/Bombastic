@@ -47,14 +47,15 @@ export const checkIn = functions.https.onCall(async (data, context) => {
   return db.runTransaction(async (tx) => {
     const userSnap = await tx.get(userRef);
     const userData = userSnap.data();
-    const lastCheckIn = userData?.lastCheckInDate as string | undefined;
+    const groupCheckIns = (userData?.groupLastCheckInDate as Record<string, string> | undefined) ?? {};
+    const lastCheckIn = groupCheckIns[groupId];
 
     if (lastCheckIn === todayKey) {
       throw new functions.https.HttpsError('already-exists', '오늘은 이미 출석했습니다.');
     }
 
     tx.update(userRef, {
-      lastCheckInDate: todayKey,
+      [`groupLastCheckInDate.${groupId}`]: todayKey,
       [`groupCurrencies.${groupId}`]: admin.firestore.FieldValue.increment(DAILY_CHECK_IN_REWARD),
     });
 

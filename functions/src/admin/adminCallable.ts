@@ -77,9 +77,10 @@ export const adminCommand = functions.https.onCall(async (data, context) => {
 
     case '/mission': {
       await db.collection('users').doc(uid).update({
-        lastCheckInDate: admin.firestore.FieldValue.delete(),
+        [`groupLastCheckInDate.${groupId}`]: admin.firestore.FieldValue.delete(),
+        [`groupCompletedMissionIds.${groupId}`]: admin.firestore.FieldValue.delete(),
       });
-      return { success: true, message: '출석 기록 초기화 완료' };
+      return { success: true, message: '출석 및 미션 기록 초기화 완료 (이 그룹)' };
     }
 
     case '/steal': {
