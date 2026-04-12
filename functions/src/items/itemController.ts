@@ -13,10 +13,9 @@ export const useItem = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('unauthenticated', '로그인이 필요합니다.');
   }
 
-  const { groupId, itemId, days } = data as {
+  const { groupId, itemId } = data as {
     groupId: string;
     itemId: string;
-    days?: number;
   };
   if (!groupId || !itemId) {
     throw new functions.https.HttpsError('invalid-argument', 'groupId와 itemId가 필요합니다.');
@@ -120,23 +119,12 @@ export const useItem = functions.https.onCall(async (data, context) => {
       break;
     }
 
-    case 'adjustGameDays': {
-      // 게임 전체 만료 시간 ±N일 조정 (group.gameExpiresAt 기준)
-      const adjustDays = typeof days === 'number' ? days : 1;
-      const currentExpires = group.gameExpiresAt
-        ? (group.gameExpiresAt as admin.firestore.Timestamp).toDate()
-        : new Date();
-      const newGameExpires = new Date(
-        currentExpires.getTime() + adjustDays * 24 * 60 * 60 * 1000,
+    case 'guardianAngel': {
+      // 수호천사는 패시브 아이템 — 폭발 시 자동 발동, 직접 사용 불가
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        '수호천사는 자동 발동 아이템입니다. 직접 사용할 수 없습니다.',
       );
-      // 최소 1분 후 보장
-      const minExpires = new Date(Date.now() + 60 * 1000);
-      batch.update(groupRef, {
-        gameExpiresAt: admin.firestore.Timestamp.fromDate(
-          newGameExpires > minExpires ? newGameExpires : minExpires,
-        ),
-      });
-      break;
     }
 
     default:

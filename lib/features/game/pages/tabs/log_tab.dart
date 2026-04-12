@@ -178,7 +178,7 @@ String _itemTypeLabel(String itemType) {
     'swapOrder' => '순서 셔플',
     'reverseDirection' => '방향 반전',
     'shrinkDuration' => '타이머 단축',
-    'adjustGameDays' => '기간 조정',
+    'guardianAngel' => '수호천사',
     _ => '아이템',
   };
 }
@@ -188,7 +188,7 @@ IconData _itemTypeIcon(String itemType) {
     'swapOrder' => Icons.shuffle_rounded,
     'reverseDirection' => Icons.swap_horiz_rounded,
     'shrinkDuration' => Icons.hourglass_bottom_rounded,
-    'adjustGameDays' => Icons.calendar_month_rounded,
+    'guardianAngel' => Icons.shield_rounded,
     _ => Icons.inventory_2,
   };
 }

@@ -8,11 +8,11 @@ enum ItemType {
   swapOrder,
   shrinkDuration,
   reverseDirection,
-  adjustGameDays,
+  guardianAngel,
 }
 
-/// 사용 조건: always = 상시 / bombHolder = 폭탄 보유 중 전용
-enum UsageType { always, bombHolder }
+/// 사용 조건: always = 상시 / bombHolder = 폭탄 보유 중 전용 / passive = 자동 발동
+enum UsageType { always, bombHolder, passive }
 
 @freezed
 abstract class ShopItemModel with _$ShopItemModel {

@@ -21,6 +21,11 @@ String bombTimer(Ref ref, String groupId) {
 
   final remaining = bomb.expiresAt.difference(DateTime.now());
 
+  // 수호천사 발동으로 expiresAt이 연장되면 다시 폭발 요청 가능하도록 리셋
+  if (!remaining.isNegative) {
+    _explodeRequested.remove(bomb.id);
+  }
+
   if (remaining.isNegative) {
     // 만료됨 — 서버에 폭발 요청 (bombId당 1회만)
     if (!_explodeRequested.contains(bomb.id)) {

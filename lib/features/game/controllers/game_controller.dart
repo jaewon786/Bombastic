@@ -158,14 +158,11 @@ class GameController extends _$GameController {
   Future<void> useItem({
     required String groupId,
     required String itemId,
-    int? days,
   }) async {
     await _runGuarded(() async {
-      final data = <String, dynamic>{'groupId': groupId, 'itemId': itemId};
-      if (days != null) data['days'] = days;
       await callHttpsCallableWithRegionFallback(
         functionName: 'useItem',
-        data: data,
+        data: {'groupId': groupId, 'itemId': itemId},
       );
     });
   }

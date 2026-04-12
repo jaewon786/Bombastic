@@ -3,9 +3,14 @@ import * as functions from 'firebase-functions';
 
 const db = admin.firestore();
 
+const GUARDIAN_ANGEL_EXTRA_SECONDS = 10;
+
 /**
  * 클라이언트에서 타이머 만료를 감지했을 때 호출하는 폭탄 폭발 Callable.
  * 서버 시간 기준으로 실제 만료 여부를 재검증한 뒤 폭발 처리한다.
+ *
+ * 수호천사 아이템 보유 시: 폭발을 1회 막고 10초 추가.
+ *
  * data: { groupId: string, bombId: string }
  */
 export const explodeBomb = functions.https.onCall(async (data, context) => {
@@ -21,37 +26,72 @@ export const explodeBomb = functions.https.onCall(async (data, context) => {
   const groupRef = db.collection('groups').doc(groupId);
   const bombRef = groupRef.collection('bombs').doc(bombId);
 
-  await db.runTransaction(async (tx) => {
+  const result = await db.runTransaction(async (tx) => {
     const bombSnap = await tx.get(bombRef);
     const bomb = bombSnap.data();
 
     if (!bomb || bomb.status !== 'active') {
-      // 이미 처리됨 — 중복 호출은 무시
-      return;
+      return { saved: false };
     }
 
     // 서버 시간 기준으로 실제 만료 여부 검증
     const now = admin.firestore.Timestamp.now();
     const expiresAt = bomb.expiresAt as admin.firestore.Timestamp;
     if (expiresAt.toMillis() > now.toMillis()) {
-      // 아직 만료 전 — 클라이언트 클럭 오차로 인한 조기 호출
-      return;
+      return { saved: false };
     }
 
     const holderUid = bomb.holderUid as string;
 
+    // ── 수호천사 아이템 확인 ──────────────────────────────────
+    const userRef = db.collection('users').doc(holderUid);
+    const userSnap = await tx.get(userRef);
+    const groupOwned =
+      (userSnap.data()?.groupOwnedItemIds as Record<string, string[]> | undefined) ?? {};
+    const ownedItems = [...(groupOwned[groupId] ?? [])];
+    const angelIndex = ownedItems.indexOf('guardianAngel');
+
+    if (angelIndex !== -1) {
+      // 수호천사 발동: 폭발 방지 + 10초 추가
+      ownedItems.splice(angelIndex, 1);
+      const newExpiresAt = admin.firestore.Timestamp.fromMillis(
+        now.toMillis() + GUARDIAN_ANGEL_EXTRA_SECONDS * 1000,
+      );
+
+      tx.update(bombRef, {
+        expiresAt: newExpiresAt,
+      });
+
+      tx.update(userRef, {
+        [`groupOwnedItemIds.${groupId}`]: ownedItems,
+      });
+
+      // 아이템 사용 로그
+      const usageRef = groupRef.collection('itemUsages').doc();
+      tx.set(usageRef, {
+        uid: holderUid,
+        itemId: 'guardianAngel',
+        itemType: 'guardianAngel',
+        usedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return { saved: true, holderUid };
+    }
+
+    // ── 수호천사 없음: 폭발 처리 ────────────────────────────
     tx.update(bombRef, {
       status: 'exploded',
       explodedUid: holderUid,
       explodedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    // 패널티 카운트
     const penaltyAmount = bomb.hasPenalty === true ? 2 : 1;
     tx.update(groupRef, {
       [`penaltyCount.${holderUid}`]: admin.firestore.FieldValue.increment(penaltyAmount),
     });
+
+    return { saved: false };
   });
 
-  return { success: true };
+  return { success: true, ...result };
 });

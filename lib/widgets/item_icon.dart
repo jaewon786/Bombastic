@@ -53,8 +53,8 @@ const _iconConfigs = <String, _IconConfig>{
     Color(0xFFE8F5E9),
     Color(0xFF2E7D32),
   ),
-  'adjustGameDays': _IconConfig(
-    Icons.calendar_month_rounded,
+  'guardianAngel': _IconConfig(
+    Icons.shield_rounded,
     Color(0xFFF3E5F5),
     Color(0xFF7B1FA2),
   ),

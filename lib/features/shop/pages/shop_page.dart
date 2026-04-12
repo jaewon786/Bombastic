@@ -194,7 +194,7 @@ class _RandomBoxCard extends ConsumerWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🎉', style: TextStyle(fontSize: 48)),
+            ItemIcon(itemType: item.id, size: 64),
             const SizedBox(height: 12),
             Text(
               item.name,
@@ -203,18 +203,18 @@ class _RandomBoxCard extends ConsumerWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               item.description,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
-            Chip(
-              label: Text(
-                item.usageType == UsageType.always ? '상시 사용' : '폭탄 보유 시',
+              style: const TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
+                height: 1.5,
               ),
             ),
+            const SizedBox(height: 12),
+            _UsageChip(usageType: item.usageType),
           ],
         ),
         actions: [
@@ -341,22 +341,21 @@ class _UsageChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final (label, bgColor, fgColor) = switch (usageType) {
+      UsageType.always => ('상시', Colors.blue.shade50, Colors.blue.shade700),
+      UsageType.bombHolder => ('폭탄 보유 시', Colors.orange.shade50, Colors.orange.shade700),
+      UsageType.passive => ('자동 발동', Colors.purple.shade50, Colors.purple.shade700),
+    };
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: usageType == UsageType.always
-            ? Colors.blue.shade50
-            : Colors.orange.shade50,
+        color: bgColor,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        usageType == UsageType.always ? '상시' : '폭탄 보유 시',
-        style: TextStyle(
-          fontSize: 10,
-          color: usageType == UsageType.always
-              ? Colors.blue.shade700
-              : Colors.orange.shade700,
-        ),
+        label,
+        style: TextStyle(fontSize: 10, color: fgColor),
       ),
     );
   }

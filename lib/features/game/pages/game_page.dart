@@ -53,7 +53,7 @@ String _itemUsageMessage(String nickname, String itemType) {
     'swapOrder' => '$nickname님이 순서를 섞었습니다! 🔀',
     'reverseDirection' => '$nickname님이 전달 방향을 반전했습니다! ↩️',
     'shrinkDuration' => '$nickname님이 타이머를 단축했습니다! ⏱️',
-    'adjustGameDays' => '$nickname님이 게임 기간을 조정했습니다! 📅',
+    'guardianAngel' => '$nickname님의 수호천사가 폭발을 막았습니다! 😇',
     _ => '$nickname님이 아이템을 사용했습니다!',
   };
 }
@@ -223,11 +223,12 @@ class _PlayingTabViewState extends ConsumerState<_PlayingTabView> {
 
         final uid = ref.read(currentUidProvider);
         final usedByUid = usage['uid'] as String? ?? '';
-        if (usedByUid == uid) return; // 본인 사용은 스킵
+        final itemType = usage['itemType'] as String? ?? '';
+        // 수호천사는 자동 발동이므로 본인에게도 알림
+        if (usedByUid == uid && itemType != 'guardianAngel') return;
 
         final group = ref.read(watchGroupProvider(widget.groupId)).asData?.value;
         final nick = group?.memberNicknames[usedByUid] ?? usedByUid;
-        final itemType = usage['itemType'] as String? ?? '';
         final message = _itemUsageMessage(nick, itemType);
 
         ScaffoldMessenger.of(context).showSnackBar(

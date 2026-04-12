@@ -44,32 +44,67 @@ export const checkBombExpiry = functions
       return;
     }
 
-    const batch = db.batch();
+    let processedCount = 0;
 
     for (const doc of snapshot.docs) {
       const data = doc.data();
       const holderUid = data.holderUid as string;
-
-      functions.logger.info(`폭탄 폭발 처리: ${doc.id}, 보유자: ${holderUid}`);
-
-      // 폭탄 상태를 exploded로 변경
-      batch.update(doc.ref, {
-        status: 'exploded',
-        explodedUid: holderUid,
-        explodedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-
-      // 그룹 문서에 패널티 카운트 증가 (hasPenalty 아이템 적용 시 2배)
       const groupId = data.groupId as string;
       const groupRef = db.collection('groups').doc(groupId);
-      const penaltyAmount = data.hasPenalty === true ? 2 : 1;
-      batch.update(groupRef, {
-        [`penaltyCount.${holderUid}`]: admin.firestore.FieldValue.increment(penaltyAmount),
+
+      await db.runTransaction(async (tx) => {
+        // 수호천사 확인
+        const userRef = db.collection('users').doc(holderUid);
+        const userSnap = await tx.get(userRef);
+        const groupOwned =
+          (userSnap.data()?.groupOwnedItemIds as Record<string, string[]> | undefined) ?? {};
+        const ownedItems = [...(groupOwned[groupId] ?? [])];
+        const angelIndex = ownedItems.indexOf('guardianAngel');
+
+        if (angelIndex !== -1) {
+          // 수호천사 발동
+          ownedItems.splice(angelIndex, 1);
+          const now = admin.firestore.Timestamp.now();
+          const newExpiresAt = admin.firestore.Timestamp.fromMillis(
+            now.toMillis() + 10 * 1000,
+          );
+
+          tx.update(doc.ref, { expiresAt: newExpiresAt });
+          tx.update(userRef, {
+            [`groupOwnedItemIds.${groupId}`]: ownedItems,
+          });
+
+          const usageRef = groupRef.collection('itemUsages').doc();
+          tx.set(usageRef, {
+            uid: holderUid,
+            itemId: 'guardianAngel',
+            itemType: 'guardianAngel',
+            usedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+          functions.logger.info(`수호천사 발동: ${doc.id}, 보유자: ${holderUid}`);
+          return;
+        }
+
+        // 수호천사 없음 → 폭발
+        functions.logger.info(`폭탄 폭발 처리: ${doc.id}, 보유자: ${holderUid}`);
+
+        tx.update(doc.ref, {
+          status: 'exploded',
+          explodedUid: holderUid,
+          explodedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        const penaltyAmount = data.hasPenalty === true ? 2 : 1;
+        tx.update(groupRef, {
+          [`penaltyCount.${holderUid}`]: admin.firestore.FieldValue.increment(penaltyAmount),
+        });
       });
+
+      processedCount++;
     }
 
-    await batch.commit();
-    functions.logger.info(`${snapshot.size}개 폭탄 폭발 처리 완료`);
+    functions.logger.info(`${processedCount}개 폭탄 처리 완료`);
   });
 
 /**

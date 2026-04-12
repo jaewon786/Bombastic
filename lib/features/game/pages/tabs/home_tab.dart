@@ -324,8 +324,9 @@ class _ItemBar extends ConsumerWidget {
                 item: item,
                 groupId: groupId,
                 count: inventoryItem.count,
-                isUsable:
-                    item.usageType == UsageType.always || isMyTurn,
+                isUsable: item.usageType == UsageType.passive
+                    ? false
+                    : item.usageType == UsageType.always || isMyTurn,
               );
             },
           ),
@@ -350,49 +351,10 @@ class _ItemCard extends ConsumerWidget {
   final bool isUsable;
 
   Future<void> _onItemTap(BuildContext context, WidgetRef ref) async {
-    // adjustGameDays: ±1일 선택 다이얼로그
-    if (item.type == ItemType.adjustGameDays) {
-      final days = await showDialog<int>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Row(
-            children: [
-              ItemIcon(itemType: item.id, size: 36),
-              const SizedBox(width: 12),
-              const Expanded(child: Text('기간 조정')),
-            ],
-          ),
-          content: const Text('게임 기간을 어떻게 조정할까요?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('취소'),
-            ),
-            OutlinedButton(
-              onPressed: () => Navigator.pop(ctx, -1),
-              child: const Text('-1일'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, 1),
-              child: const Text('+1일'),
-            ),
-          ],
-        ),
-      );
-      if (days == null || !context.mounted) return;
-      await ref
-          .read(gameControllerProvider.notifier)
-          .useItem(groupId: groupId, itemId: item.id, days: days);
-      if (!context.mounted) return;
-      final state = ref.read(gameControllerProvider);
+    // 패시브 아이템은 직접 사용 불가
+    if (item.usageType == UsageType.passive) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            state.hasError
-                ? '사용 실패: ${state.error}'
-                : '게임 기간 ${days > 0 ? "+$days" : "$days"}일 조정 완료!',
-          ),
-        ),
+        const SnackBar(content: Text('자동 발동 아이템입니다.')),
       );
       return;
     }

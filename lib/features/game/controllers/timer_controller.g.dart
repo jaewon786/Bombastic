@@ -76,7 +76,7 @@ final class BombTimerProvider
   }
 }
 
-String _$bombTimerHash() => r'9516f46027607ac0a2e4f28c6b23bcab9731da79';
+String _$bombTimerHash() => r'cc1351d44fdec2ba5bcf8927dd7ea4ad59bb16f0';
 
 /// 폭탄 남은 시간을 HH:MM:SS 문자열로 제공하는 provider
 /// activeBomb의 expiresAt 기준으로 1초마다 갱신

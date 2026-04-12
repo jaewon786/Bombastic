@@ -36,10 +36,11 @@ const _$ItemTypeEnumMap = {
   ItemType.swapOrder: 'swapOrder',
   ItemType.shrinkDuration: 'shrinkDuration',
   ItemType.reverseDirection: 'reverseDirection',
-  ItemType.adjustGameDays: 'adjustGameDays',
+  ItemType.guardianAngel: 'guardianAngel',
 };
 
 const _$UsageTypeEnumMap = {
   UsageType.always: 'always',
   UsageType.bombHolder: 'bombHolder',
+  UsageType.passive: 'passive',
 };
