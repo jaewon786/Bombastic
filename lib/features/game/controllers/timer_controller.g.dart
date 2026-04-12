@@ -10,18 +10,21 @@ part of 'timer_controller.dart';
 // ignore_for_file: type=lint, type=warning
 /// 폭탄 남은 시간을 HH:MM:SS 문자열로 제공하는 provider
 /// activeBomb의 expiresAt 기준으로 1초마다 갱신
+/// 0초 도달 시 서버에 폭발 요청
 
 @ProviderFor(bombTimer)
 final bombTimerProvider = BombTimerFamily._();
 
 /// 폭탄 남은 시간을 HH:MM:SS 문자열로 제공하는 provider
 /// activeBomb의 expiresAt 기준으로 1초마다 갱신
+/// 0초 도달 시 서버에 폭발 요청
 
 final class BombTimerProvider
     extends $FunctionalProvider<String, String, String>
     with $Provider<String> {
   /// 폭탄 남은 시간을 HH:MM:SS 문자열로 제공하는 provider
   /// activeBomb의 expiresAt 기준으로 1초마다 갱신
+  /// 0초 도달 시 서버에 폭발 요청
   BombTimerProvider._({
     required BombTimerFamily super.from,
     required String super.argument,
@@ -73,10 +76,11 @@ final class BombTimerProvider
   }
 }
 
-String _$bombTimerHash() => r'ac844da51de628d8380ce3795686c23f2d098b99';
+String _$bombTimerHash() => r'9516f46027607ac0a2e4f28c6b23bcab9731da79';
 
 /// 폭탄 남은 시간을 HH:MM:SS 문자열로 제공하는 provider
 /// activeBomb의 expiresAt 기준으로 1초마다 갱신
+/// 0초 도달 시 서버에 폭발 요청
 
 final class BombTimerFamily extends $Family
     with $FunctionalFamilyOverride<String, String> {
@@ -91,6 +95,7 @@ final class BombTimerFamily extends $Family
 
   /// 폭탄 남은 시간을 HH:MM:SS 문자열로 제공하는 provider
   /// activeBomb의 expiresAt 기준으로 1초마다 갱신
+  /// 0초 도달 시 서버에 폭발 요청
 
   BombTimerProvider call(String groupId) =>
       BombTimerProvider._(argument: groupId, from: this);

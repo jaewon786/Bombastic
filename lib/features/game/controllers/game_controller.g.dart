@@ -294,7 +294,7 @@ final class GameControllerProvider
   }
 }
 
-String _$gameControllerHash() => r'f9deaf80a954a0809de341e0df2bd0131fc193ae';
+String _$gameControllerHash() => r'bdca143f5100143a44e2825daeb447685cefffa0';
 
 abstract class _$GameController extends $Notifier<AsyncValue<void>> {
   AsyncValue<void> build();

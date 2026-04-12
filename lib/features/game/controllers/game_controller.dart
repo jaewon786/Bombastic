@@ -127,6 +127,19 @@ class GameController extends _$GameController {
     });
   }
 
+  /// 폭탄 폭발 요청 (타이머 만료 시 클라이언트가 호출, 서버에서 재검증)
+  Future<void> explodeBomb({
+    required String groupId,
+    required String bombId,
+  }) async {
+    await _runGuarded(() async {
+      await callHttpsCallableWithRegionFallback(
+        functionName: 'explodeBomb',
+        data: {'groupId': groupId, 'bombId': bombId},
+      );
+    });
+  }
+
   /// 폭탄을 다음 사람에게 전달 (Cloud Function 경유)
   /// expiresAt은 서버에서 계산되므로 기기 클럭 차이에 의한 타이머 불일치가 없다.
   Future<void> passBomb({

@@ -69,7 +69,7 @@ class SettingsTab extends ConsumerWidget {
         Card(
           child: ListTile(
             leading: const Icon(Icons.developer_mode),
-            title: const Text('Admin CLI (명령어 입력기)'),
+            title: const Text('관리자 도구'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => showDialog<void>(
               context: context,
