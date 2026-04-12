@@ -1,5 +1,6 @@
 import 'package:bomb_pass/core/router/app_router.dart';
 import 'package:bomb_pass/data/firebase/firebase_providers.dart';
+import 'package:flutter/services.dart';
 import 'package:bomb_pass/data/models/group_model.dart';
 import 'package:bomb_pass/features/game/controllers/game_controller.dart';
 import 'package:bomb_pass/features/game/pages/tabs/home_tab.dart';
@@ -95,23 +96,46 @@ class _WaitingView extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      const Text('참여 코드',
-                          style: TextStyle(color: Colors.grey)),
-                      const SizedBox(height: 4),
-                      Text(
-                        group.joinCode,
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 4,
+              // 참여 코드 — 탭하면 클립보드 복사
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: group.joinCode));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('참여 코드가 복사되었습니다 📋'),
+                      duration: Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('참여 코드',
+                                style: TextStyle(color: Colors.grey)),
+                            const SizedBox(width: 6),
+                            Icon(Icons.copy,
+                                size: 14,
+                                color: Colors.grey.withValues(alpha: 0.7)),
+                          ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        Text(
+                          group.joinCode,
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 4,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -131,7 +155,6 @@ class _WaitingView extends ConsumerWidget {
                         group.memberNicknames[memberUid] ?? '알 수 없음';
                     final isSelf = memberUid == uid;
                     final isMemberHost = i == 0;
-                    // 방장은 본인 제외 각 멤버에 강퇴 버튼 표시
                     final showKick = isHost && !isMemberHost;
                     return ListTile(
                       leading: CircleAvatar(
@@ -182,7 +205,21 @@ class _WaitingView extends ConsumerWidget {
                   ),
                 ),
               ],
-              if (isHost)
+              if (isHost) ...[
+                // 방장 혼자일 때만 방 폐쇄 버튼 노출
+                if (group.memberUids.length == 1)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: OutlinedButton(
+                      onPressed: () => _confirmAbort(context, ref),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text('방 폐쇄'),
+                    ),
+                  ),
                 ElevatedButton(
                   onPressed: group.memberUids.length >= 2
                       ? () async {
@@ -208,6 +245,7 @@ class _WaitingView extends ConsumerWidget {
                       style: TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
+              ],
             ],
           ),
         ),
@@ -239,7 +277,16 @@ class _WaitingView extends ConsumerWidget {
     await ref
         .read(groupControllerProvider.notifier)
         .leaveGroup(groupId: group.id);
-    if (context.mounted) context.go(AppRoutes.home);
+
+    if (!context.mounted) return;
+    final state = ref.read(groupControllerProvider);
+    if (state.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('나가기 실패: ${state.error}')),
+      );
+    } else {
+      context.go(AppRoutes.home);
+    }
   }
 
   Future<void> _confirmKick(
@@ -268,22 +315,52 @@ class _WaitingView extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final err = await _runKick(ref, kickedUid);
-    if (err != null && context.mounted) {
+    await ref
+        .read(groupControllerProvider.notifier)
+        .kickMember(groupId: group.id, kickedUid: kickedUid);
+
+    if (!context.mounted) return;
+    final state = ref.read(groupControllerProvider);
+    if (state.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('강퇴 실패: $err')),
+        SnackBar(content: Text('강퇴 실패: ${state.error}')),
       );
     }
   }
 
-  Future<String?> _runKick(WidgetRef ref, String kickedUid) async {
-    try {
-      await ref
-          .read(groupControllerProvider.notifier)
-          .kickMember(groupId: group.id, kickedUid: kickedUid);
-      return null;
-    } catch (e) {
-      return e.toString();
+  Future<void> _confirmAbort(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('방 폐쇄'),
+        content: const Text('방을 폐쇄하면 그룹이 삭제됩니다.\n정말 취소하시겠어요?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('폐쇄'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    await ref
+        .read(groupControllerProvider.notifier)
+        .leaveGroup(groupId: group.id);
+
+    if (!context.mounted) return;
+    final state = ref.read(groupControllerProvider);
+    if (state.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('방 폐쇄 실패: ${state.error}')),
+      );
+    } else {
+      context.go(AppRoutes.home);
     }
   }
 }
