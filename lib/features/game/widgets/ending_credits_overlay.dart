@@ -32,7 +32,7 @@ class _EndingCreditsOverlayState extends ConsumerState<EndingCreditsOverlay>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 20), // 기존 26s → 20s
+      duration: const Duration(seconds: 28),
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
           widget.onDismissed();

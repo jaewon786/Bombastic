@@ -51,6 +51,19 @@ class _ResultPageState extends ConsumerState<ResultPage>
     );
   }
 
+  void _listenShareState() {
+    ref.listen<AsyncValue<void>>(resultControllerProvider, (prev, next) {
+      if (!mounted) return;
+      next.whenOrNull(
+        error: (e, _) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('$e')),
+          );
+        },
+      );
+    });
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -63,7 +76,9 @@ class _ResultPageState extends ConsumerState<ResultPage>
 
   @override
   Widget build(BuildContext context) {
+    _listenShareState();
     final resultAsync = ref.watch(gameResultProvider(widget.groupId));
+    final isSharing = ref.watch(resultControllerProvider).isLoading;
 
     return Scaffold(
       appBar: AppBar(title: const Text('게임 결과')),
@@ -87,11 +102,19 @@ class _ResultPageState extends ConsumerState<ResultPage>
 
                 // 공유 버튼
                 ElevatedButton.icon(
-                  onPressed: () => ref
-                      .read(resultControllerProvider.notifier)
-                      .shareResult(_screenshotCtrl),
-                  icon: const Icon(Icons.share),
-                  label: const Text('SNS 공유'),
+                  onPressed: isSharing
+                      ? null
+                      : () => ref
+                            .read(resultControllerProvider.notifier)
+                            .shareResult(_screenshotCtrl),
+                  icon: isSharing
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.share),
+                  label: Text(isSharing ? '공유 준비 중...' : 'SNS 공유'),
                 ),
                 const SizedBox(height: 16),
 

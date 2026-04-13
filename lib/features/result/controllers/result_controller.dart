@@ -109,11 +109,17 @@ class ResultController extends _$ResultController {
   Future<void> shareResult(ScreenshotController screenshotCtrl) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      final Uint8List? image = await screenshotCtrl.capture();
-      if (image == null) throw Exception('이미지 캡처 실패');
-      await Share.shareXFiles(
-        [XFile.fromData(image, mimeType: 'image/png', name: 'bombastic_result.png')],
+      final Uint8List? image = await screenshotCtrl.capture(
+        delay: const Duration(milliseconds: 20),
       );
+      if (image == null) throw Exception('이미지 캡처에 실패했습니다. 다시 시도해주세요.');
+      try {
+        await Share.shareXFiles(
+          [XFile.fromData(image, mimeType: 'image/png', name: 'bombastic_result.png')],
+        );
+      } catch (e) {
+        throw Exception('공유에 실패했습니다: $e');
+      }
     });
   }
 }

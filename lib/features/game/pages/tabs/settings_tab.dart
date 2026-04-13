@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -142,18 +144,8 @@ class SettingsTab extends ConsumerWidget {
 
     if (confirmed != true || !context.mounted) return;
 
-    await ref
-        .read(groupControllerProvider.notifier)
-        .leaveGroup(groupId: groupId);
-
-    if (!context.mounted) return;
-    final state = ref.read(groupControllerProvider);
-    if (state.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('나가기 실패: ${state.error}')),
-      );
-    } else {
-      context.go(AppRoutes.home);
-    }
+    // 홈으로 먼저 이동하여 watchGroup 스트림을 해제한 뒤 탈퇴
+    context.go(AppRoutes.home);
+    unawaited(ref.read(groupControllerProvider.notifier).leaveGroup(groupId: groupId));
   }
 }
