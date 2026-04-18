@@ -35,9 +35,6 @@ dependencies:
   # 카카오링크
   kakao_flutter_sdk_share: ^1.9.0
 
-  # 폰트
-  google_fonts: ^6.2.1
-
   # UI 유틸
   intl: ^0.19.0
   gap: ^3.0.1
@@ -78,6 +75,31 @@ flutter:
   assets:
     - assets/sounds/
     - assets/image/
+    - assets/fonts/
+
+  fonts:
+    - family: Jua
+      fonts:
+        - asset: assets/fonts/Jua-Regular.ttf
+    - family: BlackHanSans
+      fonts:
+        - asset: assets/fonts/BlackHanSans-Regular.ttf
+    - family: IBMPlexSansKR
+      fonts:
+        - asset: assets/fonts/IBMPlexSansKR-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/IBMPlexSansKR-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/IBMPlexSansKR-Light.ttf
+          weight: 300
+        - asset: assets/fonts/IBMPlexSansKR-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexSansKR-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/IBMPlexSansKR-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/IBMPlexSansKR-Bold.ttf
+          weight: 700
 
 flutter_native_splash:
   color: "#FF3B30"           # 폭탄 레드 (라이트 모드)

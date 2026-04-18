@@ -1,22 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 abstract final class AppTheme {
   static const _primaryColor = Color(0xFFFF3B30);
   static const _secondaryColor = Color(0xFFFF9500);
 
+  static const _jua = TextStyle(fontFamily: 'Jua');
+  static const _ibmPlexSansKR = TextStyle(fontFamily: 'IBMPlexSansKR');
+
   static TextTheme _buildTextTheme(Brightness brightness) {
     final base = brightness == Brightness.light
         ? ThemeData.light().textTheme
         : ThemeData.dark().textTheme;
-    // IBM Plex Sans KR: 모던하고 얇은 느낌, 세련된 UI
-    return GoogleFonts.ibmPlexSansKrTextTheme(base).copyWith(
-      // AppBar·다이얼로그 제목 → Jua
-      titleLarge: GoogleFonts.jua(textStyle: base.titleLarge),
-      titleMedium: GoogleFonts.jua(textStyle: base.titleMedium),
-      headlineLarge: GoogleFonts.jua(textStyle: base.headlineLarge),
-      headlineMedium: GoogleFonts.jua(textStyle: base.headlineMedium),
-      headlineSmall: GoogleFonts.jua(textStyle: base.headlineSmall),
+    return base.copyWith(
+      displayLarge: base.displayLarge?.merge(_ibmPlexSansKR),
+      displayMedium: base.displayMedium?.merge(_ibmPlexSansKR),
+      displaySmall: base.displaySmall?.merge(_ibmPlexSansKR),
+      headlineLarge: base.headlineLarge?.merge(_jua),
+      headlineMedium: base.headlineMedium?.merge(_jua),
+      headlineSmall: base.headlineSmall?.merge(_jua),
+      titleLarge: base.titleLarge?.merge(_jua),
+      titleMedium: base.titleMedium?.merge(_jua),
+      titleSmall: base.titleSmall?.merge(_ibmPlexSansKR),
+      bodyLarge: base.bodyLarge?.merge(_ibmPlexSansKR),
+      bodyMedium: base.bodyMedium?.merge(_ibmPlexSansKR),
+      bodySmall: base.bodySmall?.merge(_ibmPlexSansKR),
+      labelLarge: base.labelLarge?.merge(_ibmPlexSansKR),
+      labelMedium: base.labelMedium?.merge(_ibmPlexSansKR),
+      labelSmall: base.labelSmall?.merge(_ibmPlexSansKR),
     );
   }
 
@@ -31,7 +41,6 @@ abstract final class AppTheme {
         appBarTheme: const AppBarTheme(
           centerTitle: true,
           elevation: 0,
-          // titleTextStyle 미설정 → textTheme.titleLarge(Jua) 자동 상속
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -39,7 +48,7 @@ abstract final class AppTheme {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            textStyle: GoogleFonts.jua(fontSize: 16),
+            textStyle: const TextStyle(fontFamily: 'Jua', fontSize: 16),
           ),
         ),
         cardTheme: CardThemeData(
@@ -68,7 +77,7 @@ abstract final class AppTheme {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            textStyle: GoogleFonts.jua(fontSize: 16),
+            textStyle: const TextStyle(fontFamily: 'Jua', fontSize: 16),
           ),
         ),
         cardTheme: CardThemeData(

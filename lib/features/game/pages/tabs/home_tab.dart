@@ -7,7 +7,6 @@ import 'package:bomb_pass/features/shop/controllers/shop_controller.dart';
 import 'package:bomb_pass/widgets/item_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class HomeTab extends ConsumerWidget {
   const HomeTab({required this.groupId, super.key});
@@ -163,7 +162,8 @@ class _GameBodyState extends ConsumerState<_GameBody>
                     return Center(
                       child: Text(
                         timer,
-                        style: GoogleFonts.blackHanSans(
+                        style: TextStyle(
+                          fontFamily: 'BlackHanSans',
                           fontSize: 77,
                           color: flashColor != Colors.transparent &&
                                   flashColor != null
