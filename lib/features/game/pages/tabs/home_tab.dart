@@ -22,7 +22,7 @@ class HomeTab extends ConsumerWidget {
       error: (e, _) => Center(child: Text('오류: $e')),
       data: (bomb) {
         if (bomb == null) {
-          return const Center(child: Text('아직 활성 폭탄이 없습니다'));
+          return const Center(child: Text('엔딩 크레딧을 불러 오는중...'));
         }
         return _GameBody(
           groupId: groupId,

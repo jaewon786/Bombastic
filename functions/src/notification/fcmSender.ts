@@ -75,8 +75,9 @@ function formatRemaining(expiresAtMs: number): string {
   const remainMs = expiresAtMs - Date.now();
   if (remainMs <= 0) return '곧';
 
-  const hours = Math.floor(remainMs / 3600000);
-  const minutes = Math.floor((remainMs % 3600000) / 60000);
+  const totalMinutes = Math.floor(remainMs / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
 
   if (hours > 0) return `${hours}시간 ${minutes}분`;
   return `${minutes}분`;
