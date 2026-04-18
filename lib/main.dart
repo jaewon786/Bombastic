@@ -12,6 +12,7 @@ import 'core/router/app_router.dart';
 import 'core/services/fcm_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
+import 'core/services/audio_service.dart';
 import 'firebase_options.dart';
 
 /// 앱이 백그라운드/종료 상태일 때 FCM 메시지 수신 핸들러.
@@ -103,13 +104,18 @@ class _BombasticAppState extends ConsumerState<BombasticApp> {
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeModeProvider);
 
-    return MaterialApp.router(
-      title: 'Bombastic',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: themeMode,
-      routerConfig: router,
+    return Listener(
+      onPointerDown: (_) {
+        ref.read(audioServiceProvider).playSfx('ButtonClickSound1.mp3');
+      },
+      child: MaterialApp.router(
+        title: 'Bombastic',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: themeMode,
+        routerConfig: router,
+      ),
     );
   }
 }

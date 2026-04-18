@@ -3,15 +3,31 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_router.dart';
+import '../../../core/services/audio_service.dart';
 import '../../../data/firebase/firebase_providers.dart';
 import '../../../data/models/group_model.dart';
 import '../controllers/home_controller.dart';
 
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    // 메인 홈에 진입하면 메인 테마송 재생 및 다른 특수 사운드 중지
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(audioServiceProvider).playBgm('GameMainThemeSong1.mp3');
+      ref.read(audioServiceProvider).stopTicking();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final groupsAsync = ref.watch(myGroupsProvider);
     final uid = ref.watch(currentUidProvider) ?? '';
 

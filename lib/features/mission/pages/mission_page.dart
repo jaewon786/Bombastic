@@ -2,6 +2,7 @@ import 'package:bomb_pass/core/constants/app_constants.dart';
 import 'package:bomb_pass/data/firebase/firebase_providers.dart';
 import 'package:bomb_pass/features/mission/controllers/mission_controller.dart';
 import 'package:bomb_pass/widgets/currency_icon.dart';
+import 'package:bomb_pass/core/services/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -81,6 +82,7 @@ class _MissionBodyState extends ConsumerState<MissionBody> {
                             message = '출석 체크에 실패했습니다.';
                           } else if (success) {
                             setState(() => _justCheckedIn = true);
+                            ref.read(audioServiceProvider).playSfx('MoneyCollectingSound1.mp3');
                             message =
                                 '출석 완료! +${CurrencyConstants.dailyCheckInReward}💰';
                           } else {
