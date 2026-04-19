@@ -11,7 +11,10 @@ final audioServiceProvider = Provider<AudioService>((ref) {
 class AudioService {
   final _bgmPlayer = AudioPlayer();
   final _tickingPlayer = AudioPlayer();
-  
+
+  String? _currentBgmFile;
+  double _currentBgmVolume = 0.05;
+
   AudioService() {
     _bgmPlayer.setReleaseMode(ReleaseMode.loop);
     _tickingPlayer.setReleaseMode(ReleaseMode.loop);
@@ -43,6 +46,8 @@ class AudioService {
   /// 반복되는 BGM 재생 (기본 5%)
   Future<void> playBgm(String fileName, {double volume = 0.05}) async {
     try {
+      _currentBgmFile = fileName;
+      _currentBgmVolume = volume;
       if (_bgmPlayer.state == PlayerState.playing) {
         await _bgmPlayer.stop();
       }
@@ -50,6 +55,18 @@ class AudioService {
       await _bgmPlayer.play(AssetSource('sounds/$fileName'));
     } catch (e) {
       debugPrint('playBgm Error: $e');
+    }
+  }
+
+  /// BGM이 멈춰있으면 마지막 파일로 재시작 (탭 전환 후 복구용)
+  Future<void> ensureBgmPlaying() async {
+    try {
+      if (_currentBgmFile == null) return;
+      if (_bgmPlayer.state == PlayerState.playing) return;
+      await _bgmPlayer.setVolume(_currentBgmVolume);
+      await _bgmPlayer.play(AssetSource('sounds/$_currentBgmFile'));
+    } catch (e) {
+      debugPrint('ensureBgmPlaying Error: $e');
     }
   }
 
@@ -64,6 +81,7 @@ class AudioService {
 
   Future<void> stopBgm() async {
     try {
+      _currentBgmFile = null;
       await _bgmPlayer.stop();
     } catch (e) {
       debugPrint('stopBgm Error: $e');

@@ -296,7 +296,7 @@ class _WaitingViewState extends ConsumerState<_WaitingView> {
                     final hasNickname = rawNickname != null &&
                         rawNickname.isNotEmpty &&
                         rawNickname != '익명';
-                    final nickname = hasNickname ? rawNickname : '닉네임 미설정';
+                    final nickname = hasNickname ? rawNickname : '닉네임 설정중...';
                     final isSelf = memberUid == uid;
                     final isMemberHost = i == 0;
                     final showKick = isHost && !isMemberHost;
@@ -703,7 +703,11 @@ class _PlayingTabViewState extends ConsumerState<_PlayingTabView> {
       bottomNavigationBar: NavigationBar(
         height: 60,
         selectedIndex: _tabIndex,
-        onDestinationSelected: (i) => setState(() => _tabIndex = i),
+        onDestinationSelected: (i) {
+          setState(() => _tabIndex = i);
+          // 탭 전환 후 BGM이 멈춰있으면 복구
+          ref.read(audioServiceProvider).ensureBgmPlaying();
+        },
         destinations: _tabs,
       ),
     );
@@ -723,6 +727,16 @@ class _FinishedView extends ConsumerStatefulWidget {
 
 class _FinishedViewState extends ConsumerState<_FinishedView> {
   @override
+  void initState() {
+    super.initState();
+    // 폭발 → finished 전환 타이밍 문제로 째깍 소리가 남을 수 있어 여기서 보장
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(audioServiceProvider).stopTicking();
+      ref.read(audioServiceProvider).stopBgm();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final creditsState =
         ref.watch(creditsShownProvider(widget.group.id));
@@ -738,8 +752,10 @@ class _FinishedViewState extends ConsumerState<_FinishedView> {
   Widget _showCredits() {
     return EndingCreditsOverlay(
       group: widget.group,
-      onDismissed: () =>
-          ref.read(creditsShownProvider(widget.group.id).notifier).markShown(),
+      onDismissed: () {
+        ref.read(audioServiceProvider).stopBgm();
+        ref.read(creditsShownProvider(widget.group.id).notifier).markShown();
+      },
     );
   }
 }
