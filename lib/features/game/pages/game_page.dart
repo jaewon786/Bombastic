@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:bomb_pass/core/router/app_router.dart';
 import 'package:bomb_pass/core/services/audio_service.dart';
 import 'package:bomb_pass/data/firebase/firebase_providers.dart';
@@ -39,6 +41,9 @@ class _GamePageState extends ConsumerState<GamePage>
   late final AnimationController _explosionController;
   bool _explosionTriggered = false;
   bool _readyForFinished = false;
+  bool _explosionShownChecked = false;
+  bool _explosionAlreadyShown = false;
+  bool _isLateExplosion = false;
   GroupModel? _finishedGroup;
 
   @override
@@ -52,6 +57,30 @@ class _GamePageState extends ConsumerState<GamePage>
           setState(() => _readyForFinished = true);
         }
       });
+  }
+
+  Future<void> _checkExplosionShown() async {
+    _explosionShownChecked = true;
+    final prefs = await SharedPreferences.getInstance();
+    final alreadyShown =
+        prefs.getBool('explosion_shown_${widget.groupId}') ?? false;
+    if (!mounted) return;
+
+    if (alreadyShown) {
+      setState(() => _explosionAlreadyShown = true);
+    } else {
+      await prefs.setBool('explosion_shown_${widget.groupId}', true);
+      if (!mounted) return;
+      final audioSvc = ref.read(audioServiceProvider);
+      audioSvc.playSfx('ExplosionSound1.mp3');
+      audioSvc.stopTicking();
+      audioSvc.stopBgm();
+      setState(() {
+        _explosionTriggered = true;
+        _isLateExplosion = true;
+      });
+      _explosionController.forward();
+    }
   }
 
   @override
@@ -92,6 +121,10 @@ class _GamePageState extends ConsumerState<GamePage>
         audioSvc.playSfx('ExplosionSound1.mp3');
         audioSvc.stopTicking();
         audioSvc.stopBgm();
+        _explosionShownChecked = true;
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.setBool('explosion_shown_${widget.groupId}', true);
+        });
         setState(() => _explosionTriggered = true);
         _explosionController.forward();
       }
@@ -133,11 +166,15 @@ class _GamePageState extends ConsumerState<GamePage>
           );
         }
 
-        // 폭발 애니메이션 재생 중: playing 화면 유지 + 오버레이
+        // 폭발 애니메이션 재생 중
         if (_explosionTriggered && !_readyForFinished) {
           return Stack(
             children: [
-              _PlayingTabView(groupId: widget.groupId),
+              if (!_isLateExplosion)
+                _PlayingTabView(groupId: widget.groupId)
+              else
+                const Scaffold(
+                    backgroundColor: Colors.black, body: SizedBox()),
               _ExplosionOverlay(controller: _explosionController),
             ],
           );
@@ -146,6 +183,24 @@ class _GamePageState extends ConsumerState<GamePage>
         // 애니메이션 종료 후: finished 화면으로 전환
         if (_readyForFinished) {
           return _FinishedView(group: _finishedGroup ?? group);
+        }
+
+        // 게임이 이미 끝난 상태로 앱을 연 경우: 폭발 애니메이션 1회 재생 여부 확인
+        if (group.status == GroupStatus.finished) {
+          _finishedGroup ??= group;
+          if (!_explosionShownChecked) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && !_explosionShownChecked) _checkExplosionShown();
+            });
+            return const Scaffold(
+                backgroundColor: Colors.black, body: SizedBox());
+          }
+          if (_explosionAlreadyShown) {
+            return _FinishedView(group: _finishedGroup ?? group);
+          }
+          // 체크 완료됐지만 애니메이션 시작 전 순간
+          return const Scaffold(
+              backgroundColor: Colors.black, body: SizedBox());
         }
 
         return switch (group.status) {
