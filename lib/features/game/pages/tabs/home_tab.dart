@@ -492,18 +492,35 @@ class _ItemCard extends ConsumerWidget {
                           Positioned(
                             top: 5,
                             left: 5,
-                            child: Container(
-                              padding: const EdgeInsets.all(3),
-                              decoration: BoxDecoration(
-                                color: Colors.black54,
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              child: const Icon(
-                                Icons.lock_rounded,
-                                size: 10,
-                                color: Colors.white,
-                              ),
-                            ),
+                            child: item.usageType == UsageType.passive
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 4, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.purple.shade400,
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: const Text(
+                                      '자동',
+                                      style: TextStyle(
+                                        fontSize: 8,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  )
+                                : Container(
+                                    padding: const EdgeInsets.all(3),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black54,
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: const Icon(
+                                      Icons.lock_rounded,
+                                      size: 10,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                           ),
                         Positioned(
                           top: 5,

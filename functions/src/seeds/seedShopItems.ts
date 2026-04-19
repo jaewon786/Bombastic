@@ -48,7 +48,7 @@ const shopItems: ShopItemSeed[] = [
     description: '폭탄 전달 순서를 랜덤으로 섞습니다 (내 위치 유지)',
     price: 50,
     type: 'swapOrder',
-    usageType: 'always',
+    usageType: 'bombHolder',
     isAvailable: true,
     probability: 40,
   },
