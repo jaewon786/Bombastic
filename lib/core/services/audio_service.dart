@@ -8,20 +8,34 @@ final audioServiceProvider = Provider<AudioService>((ref) {
   return service;
 });
 
+// Android: 탭 전환/시스템 이벤트에서 오디오 포커스를 빼앗기지 않도록 gain 설정
+const _androidCtx = AudioContext(
+  android: AudioContextAndroid(
+    contentType: AndroidContentType.music,
+    usageType: AndroidUsageType.media,
+    audioFocus: AndroidAudioFocus.gain,
+    isSpeakerphoneOn: false,
+    stayAwake: false,
+  ),
+);
+
 class AudioService {
   final _bgmPlayer = AudioPlayer();
   final _tickingPlayer = AudioPlayer();
 
   String? _currentBgmFile;
   double _currentBgmVolume = 0.05;
+  bool _tickingActive = false; // 째깍 소리가 재생 중이어야 하는 상태
   bool _bgmChanging = false;
-  bool _bgmPaused = false; // pauseAll로 의도적으로 정지된 경우
+  bool _bgmPaused = false;
 
   AudioService() {
     _bgmPlayer.setReleaseMode(ReleaseMode.loop);
     _tickingPlayer.setReleaseMode(ReleaseMode.loop);
     _bgmPlayer.setVolume(0.05);
     _tickingPlayer.setVolume(0.05);
+    _bgmPlayer.setAudioContext(_androidCtx);
+    _tickingPlayer.setAudioContext(_androidCtx);
   }
 
   Future<void> dispose() async {
@@ -35,10 +49,7 @@ class AudioService {
       final player = AudioPlayer();
       await player.setVolume(0.05);
       await player.play(AssetSource('sounds/$fileName'));
-
-      player.onPlayerComplete.listen((_) {
-        player.dispose();
-      });
+      player.onPlayerComplete.listen((_) => player.dispose());
     } catch (e) {
       debugPrint('playSfx Error: $e');
     }
@@ -69,7 +80,28 @@ class AudioService {
     }
   }
 
-  /// BGM이 멈춰있으면 마지막 파일로 재시작 (탭 전환 후 복구용)
+  /// BGM + 째깍 소리를 현재 기대 상태로 복구 (탭 전환 후 사용)
+  Future<void> restoreAudio() async {
+    try {
+      if (_currentBgmFile != null && !_bgmPaused) {
+        if (_bgmPlayer.state != PlayerState.playing) {
+          await _bgmPlayer.setVolume(_currentBgmVolume);
+          await _bgmPlayer.play(AssetSource('sounds/$_currentBgmFile'));
+        }
+      }
+      if (_tickingActive) {
+        if (_tickingPlayer.state != PlayerState.playing) {
+          await _tickingPlayer.setVolume(0.05);
+          await _tickingPlayer.play(
+              AssetSource('sounds/WatchTickingSound1.mp3'));
+        }
+      }
+    } catch (e) {
+      debugPrint('restoreAudio Error: $e');
+    }
+  }
+
+  /// BGM이 멈춰있으면 마지막 파일로 재시작
   Future<void> ensureBgmPlaying() async {
     try {
       if (_currentBgmFile == null || _bgmPaused) return;
@@ -81,7 +113,7 @@ class AudioService {
     }
   }
 
-  /// 현재 재생중인 BGM의 볼륨만 조절 (음소거/복구용)
+  /// 현재 재생중인 BGM의 볼륨만 조절
   Future<void> changeBgmVolume(double volume) async {
     try {
       _currentBgmVolume = volume;
@@ -127,9 +159,11 @@ class AudioService {
   /// 긴장감 넘치는 Ticking 재생
   Future<void> playTicking() async {
     try {
+      _tickingActive = true;
       if (_tickingPlayer.state != PlayerState.playing) {
         await _tickingPlayer.setVolume(0.05);
-        await _tickingPlayer.play(AssetSource('sounds/WatchTickingSound1.mp3'));
+        await _tickingPlayer.play(
+            AssetSource('sounds/WatchTickingSound1.mp3'));
       }
     } catch (e) {
       debugPrint('playTicking Error: $e');
@@ -138,6 +172,7 @@ class AudioService {
 
   Future<void> stopTicking() async {
     try {
+      _tickingActive = false;
       await _tickingPlayer.stop();
     } catch (e) {
       debugPrint('stopTicking Error: $e');

@@ -806,7 +806,7 @@ class _PlayingTabViewState extends ConsumerState<_PlayingTabView> {
         onDestinationSelected: (i) {
           setState(() => _tabIndex = i);
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            ref.read(audioServiceProvider).ensureBgmPlaying();
+            if (mounted) ref.read(audioServiceProvider).restoreAudio();
           });
         },
         destinations: _tabs,
