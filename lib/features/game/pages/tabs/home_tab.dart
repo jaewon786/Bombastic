@@ -19,7 +19,7 @@ class HomeTab extends ConsumerWidget {
     final bombAsync = ref.watch(activeBombProvider(groupId));
 
     return bombAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const SizedBox.shrink(),
       error: (e, _) => Center(child: Text('오류: $e')),
       data: (bomb) {
         if (bomb == null) {
