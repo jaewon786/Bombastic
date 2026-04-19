@@ -14,6 +14,7 @@ class AudioService {
 
   String? _currentBgmFile;
   double _currentBgmVolume = 0.05;
+  bool _bgmChanging = false; // 동시 playBgm 호출 방지용
 
   AudioService() {
     _bgmPlayer.setReleaseMode(ReleaseMode.loop);
@@ -45,16 +46,27 @@ class AudioService {
 
   /// 반복되는 BGM 재생 (기본 5%)
   Future<void> playBgm(String fileName, {double volume = 0.05}) async {
-    try {
-      _currentBgmFile = fileName;
+    // 이미 같은 파일이 재생 중이면 볼륨만 조정
+    if (_bgmPlayer.state == PlayerState.playing && _currentBgmFile == fileName) {
       _currentBgmVolume = volume;
+      await _bgmPlayer.setVolume(volume);
+      return;
+    }
+    // 진행 중인 변경 작업이 있으면 요청만 덮어쓰고 대기
+    _currentBgmFile = fileName;
+    _currentBgmVolume = volume;
+    if (_bgmChanging) return;
+    _bgmChanging = true;
+    try {
       if (_bgmPlayer.state == PlayerState.playing) {
         await _bgmPlayer.stop();
       }
-      await _bgmPlayer.setVolume(volume);
-      await _bgmPlayer.play(AssetSource('sounds/$fileName'));
+      await _bgmPlayer.setVolume(_currentBgmVolume);
+      await _bgmPlayer.play(AssetSource('sounds/$_currentBgmFile'));
     } catch (e) {
       debugPrint('playBgm Error: $e');
+    } finally {
+      _bgmChanging = false;
     }
   }
 
@@ -82,6 +94,7 @@ class AudioService {
   Future<void> stopBgm() async {
     try {
       _currentBgmFile = null;
+      _bgmChanging = false;
       await _bgmPlayer.stop();
     } catch (e) {
       debugPrint('stopBgm Error: $e');
