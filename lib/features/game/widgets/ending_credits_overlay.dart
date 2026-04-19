@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/audio_service.dart';
 import '../../../data/models/group_model.dart';
 import '../../result/controllers/result_controller.dart';
 import '../../result/models/game_result_model.dart';
@@ -42,6 +43,7 @@ class _EndingCreditsOverlayState extends ConsumerState<EndingCreditsOverlay>
 
   @override
   void dispose() {
+    ref.read(audioServiceProvider).stopBgm();
     _controller.dispose();
     super.dispose();
   }
@@ -55,6 +57,7 @@ class _EndingCreditsOverlayState extends ConsumerState<EndingCreditsOverlay>
           _contentKey.currentContext?.findRenderObject() as RenderBox?;
       if (box != null) setState(() => _contentHeight = box.size.height);
       _controller.forward();
+      ref.read(audioServiceProvider).playBgm('EndingCreditSound1.mp3');
     });
   }
 
