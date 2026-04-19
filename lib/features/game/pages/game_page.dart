@@ -841,19 +841,6 @@ class _FinishedHomeTab extends StatelessWidget {
               group.name,
               style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () =>
-                    context.push('${AppRoutes.result}/${group.id}'),
-                icon: const Icon(Icons.emoji_events),
-                label: const Text('결과 보기'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-              ),
-            ),
           ],
         ),
       ),

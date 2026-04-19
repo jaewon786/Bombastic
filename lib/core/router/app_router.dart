@@ -8,8 +8,6 @@ import '../../features/game/pages/game_page.dart';
 import '../../features/group/pages/group_join_page.dart';
 import '../../features/group/pages/group_create_page.dart';
 import '../../features/group/pages/nickname_input_page.dart';
-import '../../features/result/pages/result_page.dart';
-
 part 'app_router.g.dart';
 
 abstract final class AppRoutes {
@@ -19,7 +17,6 @@ abstract final class AppRoutes {
   static const groupCreate = '/group/create';
   static const nickname = '/group/nickname';  // /group/nickname/:groupId
   static const game = '/game';       // /game/:groupId
-  static const result = '/result';   // /result/:groupId
 }
 
 @riverpod
@@ -55,12 +52,6 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '${AppRoutes.game}/:groupId',
         builder: (context, state) => GamePage(
-          groupId: state.pathParameters['groupId']!,
-        ),
-      ),
-      GoRoute(
-        path: '${AppRoutes.result}/:groupId',
-        builder: (context, state) => ResultPage(
           groupId: state.pathParameters['groupId']!,
         ),
       ),
