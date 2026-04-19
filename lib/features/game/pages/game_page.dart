@@ -252,12 +252,8 @@ Future<void> _shareViaKakao(
   } catch (e) {
     debugPrint('KakaoLink 공유 실패: $e');
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('카카오 공유 오류: $e'),
-          duration: const Duration(seconds: 6),
-        ),
-      );
+      showTopToast(context, '카카오 공유 오류: $e',
+          duration: const Duration(seconds: 6));
     }
   }
 }
@@ -348,13 +344,8 @@ class _WaitingViewState extends ConsumerState<_WaitingView> {
                           onTap: () {
                             Clipboard.setData(
                                 ClipboardData(text: group.joinCode));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('참여 코드가 복사되었습니다 📋'),
-                                duration: Duration(seconds: 2),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
+                            showTopToast(context, '참여 코드가 복사되었습니다 📋',
+                                duration: const Duration(seconds: 2));
                           },
                           child: Column(
                             children: [
@@ -508,9 +499,7 @@ class _WaitingViewState extends ConsumerState<_WaitingView> {
                                     .startGame(groupId: group.id);
                               } catch (e) {
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('게임 시작 실패: $e')),
-                                  );
+                                  showTopToast(context, '게임 시작 실패: $e');
                                 }
                               }
                             }
@@ -616,9 +605,7 @@ class _WaitingViewState extends ConsumerState<_WaitingView> {
     if (!context.mounted) return;
     final state = ref.read(groupControllerProvider);
     if (state.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('강퇴 실패: ${state.error}')),
-      );
+      showTopToast(context, '강퇴 실패: ${state.error}');
     }
   }
 
@@ -745,13 +732,7 @@ class _PlayingTabViewState extends ConsumerState<_PlayingTabView> {
         final nick = group?.memberNicknames[usedByUid] ?? usedByUid;
         final message = _itemUsageMessage(nick, itemType);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            duration: const Duration(seconds: 3),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        showTopToast(context, message);
       },
     );
 
@@ -1060,6 +1041,118 @@ class _FinishedHomeTab extends StatelessWidget {
               style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── 상단 토스트 알림 ──────────────────────────────────────────
+
+void showTopToast(
+  BuildContext context,
+  String message, {
+  Duration duration = const Duration(seconds: 3),
+}) {
+  final overlay = Overlay.of(context);
+  late OverlayEntry entry;
+  entry = OverlayEntry(
+    builder: (_) => _TopToast(
+      message: message,
+      duration: duration,
+      onDismiss: () {
+        if (entry.mounted) entry.remove();
+      },
+    ),
+  );
+  overlay.insert(entry);
+}
+
+class _TopToast extends StatefulWidget {
+  const _TopToast({
+    required this.message,
+    required this.duration,
+    required this.onDismiss,
+  });
+
+  final String message;
+  final Duration duration;
+  final VoidCallback onDismiss;
+
+  @override
+  State<_TopToast> createState() => _TopToastState();
+}
+
+class _TopToastState extends State<_TopToast>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<Offset> _slide;
+  late final Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    _slide = Tween<Offset>(
+      begin: const Offset(0, -1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+
+    _ctrl.forward();
+    Future.delayed(widget.duration, () {
+      if (mounted) _ctrl.reverse().then((_) => widget.onDismiss());
+    });
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final top = MediaQuery.of(context).padding.top + kToolbarHeight + 8;
+    return Positioned(
+      top: top,
+      left: 24,
+      right: 24,
+      child: SlideTransition(
+        position: _slide,
+        child: FadeTransition(
+          opacity: _fade,
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.82),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                widget.message,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
         ),
       ),
     );
