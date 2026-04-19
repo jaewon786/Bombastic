@@ -23,7 +23,7 @@ class HomeTab extends ConsumerWidget {
       error: (e, _) => Center(child: Text('오류: $e')),
       data: (bomb) {
         if (bomb == null) {
-          return const Center(child: Text('엔딩 크레딧을 불러 오는중...'));
+          return const SizedBox.shrink();
         }
         return _GameBody(
           groupId: groupId,

@@ -458,7 +458,7 @@ class _CreditsContent extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 700),
+        const SizedBox(height: 200),
       ],
     );
   }

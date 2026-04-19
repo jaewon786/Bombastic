@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:bomb_pass/core/router/app_router.dart';
@@ -554,7 +555,8 @@ class _PlayingTabView extends ConsumerStatefulWidget {
   ConsumerState<_PlayingTabView> createState() => _PlayingTabViewState();
 }
 
-class _PlayingTabViewState extends ConsumerState<_PlayingTabView> {
+class _PlayingTabViewState extends ConsumerState<_PlayingTabView>
+    with SingleTickerProviderStateMixin {
   int _tabIndex = 2; // 홈 탭 기본
 
   static const _tabs = [
@@ -566,14 +568,30 @@ class _PlayingTabViewState extends ConsumerState<_PlayingTabView> {
   ];
 
   Map<String, dynamic>? _lastShownUsage;
-
   String _currentBgm = 'IngameBGM1.mp3';
+
+  late final AnimationController _explosionController;
+  bool _explosionTriggered = false;
 
   @override
   void initState() {
     super.initState();
-    // 첫 진입 시 BGM을 시작하기 위해 현재 holderUid 확인이 필요합니다만,
-    // activeBombProvider 데이터 로딩 이후를 위해 build() 내 listen에서 처리합니다.
+    _explosionController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    );
+  }
+
+  @override
+  void dispose() {
+    _explosionController.dispose();
+    super.dispose();
+  }
+
+  void _triggerExplosion() {
+    if (_explosionTriggered) return;
+    setState(() => _explosionTriggered = true);
+    _explosionController.forward();
   }
 
   @override
@@ -584,17 +602,19 @@ class _PlayingTabViewState extends ConsumerState<_PlayingTabView> {
     ref.listen(activeBombProvider(widget.groupId), (prev, next) {
       final oldBomb = prev?.asData?.value;
       final newBomb = next.asData?.value;
-      if (newBomb == null) return;
 
       final audioSvc = ref.read(audioServiceProvider);
 
-      // 폭발 처리
-      if (newBomb.status == BombStatus.exploded && oldBomb?.status != BombStatus.exploded) {
+      // 폭발 감지: 활성 폭탄이 사라짐 = 폭발
+      if (oldBomb != null && newBomb == null) {
         audioSvc.playSfx('ExplosionSound1.mp3');
         audioSvc.stopTicking();
         audioSvc.stopBgm();
+        _triggerExplosion();
         return;
       }
+
+      if (newBomb == null) return;
 
       final iHaveBomb = newBomb.holderUid == uid;
       final iHadBomb = oldBomb?.holderUid == uid;
@@ -660,7 +680,7 @@ class _PlayingTabViewState extends ConsumerState<_PlayingTabView> {
             ?.name ??
         'Bombastic';
 
-    return Scaffold(
+    final scaffold = Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () {
           ref.read(audioServiceProvider).playBgm('GameMainThemeSong1.mp3');
@@ -690,15 +710,15 @@ class _PlayingTabViewState extends ConsumerState<_PlayingTabView> {
           context.go(AppRoutes.home);
         },
         child: FloatingBombBackground(
-        child: switch (_tabIndex) {
-          0 => ShopBody(groupId: widget.groupId),
-          1 => MissionBody(groupId: widget.groupId),
-          2 => HomeTab(groupId: widget.groupId),
-          3 => LogTab(groupId: widget.groupId),
-          4 => SettingsTab(groupId: widget.groupId),
-          _ => HomeTab(groupId: widget.groupId),
-        },
-      ),
+          child: switch (_tabIndex) {
+            0 => ShopBody(groupId: widget.groupId),
+            1 => MissionBody(groupId: widget.groupId),
+            2 => HomeTab(groupId: widget.groupId),
+            3 => LogTab(groupId: widget.groupId),
+            4 => SettingsTab(groupId: widget.groupId),
+            _ => HomeTab(groupId: widget.groupId),
+          },
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         height: 60,
@@ -710,6 +730,112 @@ class _PlayingTabViewState extends ConsumerState<_PlayingTabView> {
         },
         destinations: _tabs,
       ),
+    );
+
+    if (!_explosionTriggered) return scaffold;
+
+    return Stack(
+      children: [
+        scaffold,
+        _ExplosionOverlay(controller: _explosionController),
+      ],
+    );
+  }
+}
+
+// ── 폭발 애니메이션 오버레이 ──────────────────────────────────
+
+class _ExplosionOverlay extends StatelessWidget {
+  const _ExplosionOverlay({required this.controller});
+
+  final AnimationController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final t = controller.value;
+
+        // Phase 1 (0.0~0.30): 폭탄 흔들림 + 미세 글로우
+        final shakeProgress = (t / 0.30).clamp(0.0, 1.0);
+        final shakeX = t < 0.30
+            ? sin(shakeProgress * 9 * pi) * 22 * (1 - shakeProgress * 0.6)
+            : 0.0;
+        final bombScale = t < 0.30 ? 1.0 + shakeProgress * 0.35 : 1.35;
+        final bombOpacity =
+            t < 0.30 ? 1.0 : t < 0.42 ? 1.0 - (t - 0.30) / 0.12 : 0.0;
+
+        // Phase 2 (0.28~0.52): 오렌지/흰색 플래시
+        final flashOpacity = t < 0.28
+            ? 0.0
+            : t < 0.38
+                ? (t - 0.28) / 0.10
+                : t < 0.52
+                    ? 1.0 - (t - 0.38) / 0.14
+                    : 0.0;
+
+        // Phase 3 (0.46~1.0): 검정 페이드
+        final blackOpacity = t < 0.46
+            ? 0.0
+            : t < 0.82
+                ? (t - 0.46) / 0.36
+                : 1.0;
+
+        return Positioned.fill(
+          child: Stack(
+            children: [
+              // 폭탄 흔들림
+              if (bombOpacity > 0)
+                Center(
+                  child: Opacity(
+                    opacity: bombOpacity,
+                    child: Transform.translate(
+                      offset: Offset(shakeX, 0),
+                      child: Transform.scale(
+                        scale: bombScale,
+                        child: const Text(
+                          '💣',
+                          style: TextStyle(fontSize: 96),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // 오렌지 플래시
+              if (flashOpacity > 0)
+                Positioned.fill(
+                  child: Opacity(
+                    opacity: flashOpacity,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          colors: [
+                            Colors.white,
+                            Colors.orangeAccent,
+                            Colors.deepOrange.withValues(alpha: 0.6),
+                            Colors.transparent,
+                          ],
+                          stops: const [0.0, 0.25, 0.55, 1.0],
+                          radius: 1.2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // 검정 페이드
+              if (blackOpacity > 0)
+                Positioned.fill(
+                  child: ColoredBox(
+                    color: Colors.black.withValues(alpha: blackOpacity),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -731,6 +857,7 @@ class _FinishedViewState extends ConsumerState<_FinishedView> {
     super.initState();
     // 폭발 → finished 전환 타이밍 문제로 째깍 소리가 남을 수 있어 여기서 보장
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       ref.read(audioServiceProvider).stopTicking();
       ref.read(audioServiceProvider).stopBgm();
     });
