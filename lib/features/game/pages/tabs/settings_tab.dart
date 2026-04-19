@@ -10,6 +10,7 @@ import '../../../../data/models/group_model.dart';
 import '../../../admin/widgets/admin_cli_dialog.dart';
 import '../../../group/controllers/group_controller.dart';
 import '../../controllers/credits_controller.dart';
+import '../../../../core/services/audio_service.dart';
 
 class SettingsTab extends ConsumerWidget {
   const SettingsTab({super.key, required this.groupId});
@@ -39,22 +40,28 @@ class SettingsTab extends ConsumerWidget {
                 title: const Text('시스템 설정 따름'),
                 value: ThemeMode.system,
                 groupValue: themeMode,
-                onChanged: (v) =>
-                    ref.read(themeModeProvider.notifier).setMode(v!),
+                onChanged: (v) {
+                  ref.read(audioServiceProvider).playSfx('ButtonClickSound1.mp3');
+                  ref.read(themeModeProvider.notifier).setMode(v!);
+                },
               ),
               RadioListTile<ThemeMode>(
                 title: const Text('라이트 모드'),
                 value: ThemeMode.light,
                 groupValue: themeMode,
-                onChanged: (v) =>
-                    ref.read(themeModeProvider.notifier).setMode(v!),
+                onChanged: (v) {
+                  ref.read(audioServiceProvider).playSfx('ButtonClickSound1.mp3');
+                  ref.read(themeModeProvider.notifier).setMode(v!);
+                },
               ),
               RadioListTile<ThemeMode>(
                 title: const Text('다크 모드'),
                 value: ThemeMode.dark,
                 groupValue: themeMode,
-                onChanged: (v) =>
-                    ref.read(themeModeProvider.notifier).setMode(v!),
+                onChanged: (v) {
+                  ref.read(audioServiceProvider).playSfx('ButtonClickSound1.mp3');
+                  ref.read(themeModeProvider.notifier).setMode(v!);
+                },
               ),
             ],
           ),
@@ -78,7 +85,9 @@ class SettingsTab extends ConsumerWidget {
               context: context,
               barrierDismissible: false,
               builder: (ctx) => AdminCliDialog(groupId: groupId),
-            ),
+            ).then((_) {
+              ref.read(audioServiceProvider).playSfx('ButtonClickSound1.mp3');
+            }),
           ),
         ),
 
@@ -98,9 +107,10 @@ class SettingsTab extends ConsumerWidget {
                   leading: const Icon(Icons.movie_filter_outlined),
                   title: const Text('엔딩 크레딧 다시보기'),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => ref
-                      .read(creditsShownProvider(groupId).notifier)
-                      .showAgain(),
+                  onTap: () {
+                    ref.read(audioServiceProvider).playSfx('ButtonClickSound1.mp3');
+                    ref.read(creditsShownProvider(groupId).notifier).showAgain();
+                  },
                 ),
                 const Divider(height: 1),
                 ListTile(
@@ -110,7 +120,10 @@ class SettingsTab extends ConsumerWidget {
                     style: TextStyle(color: Colors.red),
                   ),
                   subtitle: const Text('그룹을 나가면 목록에서 사라집니다.'),
-                  onTap: () => _confirmLeave(context, ref),
+                  onTap: () {
+                    ref.read(audioServiceProvider).playSfx('ButtonClickSound1.mp3');
+                    _confirmLeave(context, ref);
+                  },
                 ),
               ],
             ),
@@ -145,7 +158,18 @@ class SettingsTab extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
 
     // 홈으로 먼저 이동하여 watchGroup 스트림을 해제한 뒤 탈퇴
-    context.go(AppRoutes.home);
-    unawaited(ref.read(groupControllerProvider.notifier).leaveGroup(groupId: groupId));
+    final groupNotifier = ref.read(groupControllerProvider.notifier);
+    final audioSvc = ref.read(audioServiceProvider);
+
+    audioSvc.playBgm('GameMainThemeSong1.mp3');
+    audioSvc.stopTicking();
+    
+    // 탈퇴 처리 전 사운드 재생
+    audioSvc.playSfx('ButtonClickSound1.mp3');
+
+    unawaited(groupNotifier.leaveGroup(groupId: groupId));
+    if (context.mounted) {
+      context.go(AppRoutes.home);
+    }
   }
 }

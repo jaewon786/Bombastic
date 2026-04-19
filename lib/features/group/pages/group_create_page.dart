@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:bomb_pass/core/constants/app_constants.dart';
 import 'package:bomb_pass/features/group/controllers/group_controller.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/services/audio_service.dart';
 
 class GroupCreatePage extends ConsumerStatefulWidget {
   const GroupCreatePage({super.key});
@@ -66,6 +67,7 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
                 divisions: AppConstants.maxGroupSize - AppConstants.minGroupSize,
                 label: '$_maxMembers명',
                 onChanged: (v) => setState(() => _maxMembers = v.toInt()),
+                onChangeEnd: (v) => ref.read(audioServiceProvider).playSfx('ButtonClickSound1.mp3'),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -94,6 +96,7 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
                 onPressed: state.isLoading
                     ? null
                     : () async {
+                        ref.read(audioServiceProvider).playSfx('ButtonClickSound1.mp3');
                         final name = _nameController.text.trim();
                         if (name.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(

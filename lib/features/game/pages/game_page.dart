@@ -31,29 +31,58 @@ class GamePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final uid = ref.watch(currentUidProvider);
+
+    // 스트림 상태 변화에 따른 사이드 이펙트(화면 강제 전환)
+    ref.listen<AsyncValue<GroupModel?>>(watchGroupProvider(groupId), (prev, next) {
+      if (next.isLoading) return;
+      
+      final group = next.asData?.value;
+      final hasPermissionError = next.hasError;
+      final isNoLongerMember = group != null && uid != null && !group.memberUids.contains(uid);
+      final isDeleted = !next.isLoading && group == null;
+
+      if (hasPermissionError || isDeleted || isNoLongerMember) {
+        // 이미 홈에 있거나 이동 중이면 중복 실행 방지
+        if (context.mounted && GoRouterState.of(context).uri.toString() != AppRoutes.home) {
+          context.go(AppRoutes.home);
+        }
+      }
+    });
+
     final groupAsync = ref.watch(watchGroupProvider(groupId));
 
     return groupAsync.when(
       loading: () => const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       ),
-      error: (e, _) {
-        // 그룹 삭제/강퇴로 인한 권한 오류 → 홈으로 이동
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (context.mounted) context.go(AppRoutes.home);
-        });
-        return const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        );
-      },
+      error: (e, _) => const Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('그룹 정보를 불러올 수 없거나 멤버가 아닙니다.'),
+              Text('홈으로 이동 중...', style: TextStyle(color: Colors.grey)),
+            ],
+          ),
+        ),
+      ),
       data: (group) {
-        if (group == null) {
-          // 그룹 삭제(마지막 멤버 탈퇴 등) 시 자동으로 홈으로 이동
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (context.mounted) context.go(AppRoutes.home);
-          });
+        if (group == null || (uid != null && !group.memberUids.contains(uid))) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('그룹에서 나갔거나 삭제되었습니다.'),
+                  Text('홈으로 이동 중...', style: TextStyle(color: Colors.grey)),
+                ],
+              ),
+            ),
           );
         }
 
@@ -137,7 +166,7 @@ class _WaitingViewState extends ConsumerState<_WaitingView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(audioServiceProvider).playSfx('EnteringSound1.mp3');
-      ref.read(audioServiceProvider).playBgm('IngameBGM1.mp3', volume: 0.2); // 대기실 진입 시 IngameBGM 재생
+      ref.read(audioServiceProvider).playBgm('WaitingRoomSound1.mp3', volume: 0.05); // 5% 볼륨
     });
   }
 
@@ -409,7 +438,10 @@ class _WaitingViewState extends ConsumerState<_WaitingView> {
             child: const Text('취소'),
           ),
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
+            onPressed: () {
+              ref.read(audioServiceProvider).playSfx('ButtonClickSound1.mp3');
+              Navigator.of(ctx).pop(true);
+            },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('나가기'),
           ),
@@ -418,11 +450,17 @@ class _WaitingViewState extends ConsumerState<_WaitingView> {
     );
     if (confirmed != true || !context.mounted) return;
 
-    // 홈으로 먼저 이동하여 watchGroup 스트림을 해제한 뒤 탈퇴
-    ref.read(audioServiceProvider).playBgm('GameMainThemeSong1.mp3');
-    ref.read(audioServiceProvider).stopTicking();
-    context.go(AppRoutes.home);
-    unawaited(ref.read(groupControllerProvider.notifier).leaveGroup(groupId: widget.group.id));
+    final audioSvc = ref.read(audioServiceProvider);
+    final groupNotifier = ref.read(groupControllerProvider.notifier);
+
+    audioSvc.playBgm('GameMainThemeSong1.mp3');
+    audioSvc.stopTicking();
+
+    // 탈퇴 처리를 비동기로 던지고 즉시 홈으로 이동
+    unawaited(groupNotifier.leaveGroup(groupId: widget.group.id));
+    if (context.mounted) {
+      context.go(AppRoutes.home);
+    }
   }
 
   Future<void> _confirmKick(
@@ -442,7 +480,10 @@ class _WaitingViewState extends ConsumerState<_WaitingView> {
             child: const Text('취소'),
           ),
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
+            onPressed: () {
+              ref.read(audioServiceProvider).playSfx('ButtonClickSound1.mp3');
+              Navigator.of(ctx).pop(true);
+            },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('강퇴'),
           ),
@@ -476,7 +517,10 @@ class _WaitingViewState extends ConsumerState<_WaitingView> {
             child: const Text('취소'),
           ),
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
+            onPressed: () {
+              ref.read(audioServiceProvider).playSfx('ButtonClickSound1.mp3');
+              Navigator.of(ctx).pop(true);
+            },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('폐쇄'),
           ),
@@ -485,12 +529,17 @@ class _WaitingViewState extends ConsumerState<_WaitingView> {
     );
     if (confirmed != true || !context.mounted) return;
 
-    // 홈으로 먼저 이동하여 watchGroup 스트림을 해제한 뒤 삭제
-    // (그룹 삭제 후 스트림이 권한 오류를 받는 깜빡임 방지)
-    ref.read(audioServiceProvider).playBgm('GameMainThemeSong1.mp3');
-    ref.read(audioServiceProvider).stopTicking();
-    context.go(AppRoutes.home);
-    unawaited(ref.read(groupControllerProvider.notifier).leaveGroup(groupId: widget.group.id));
+    final audioSvc = ref.read(audioServiceProvider);
+    final groupNotifier = ref.read(groupControllerProvider.notifier);
+
+    audioSvc.playBgm('GameMainThemeSong1.mp3');
+    audioSvc.stopTicking();
+
+    // 방 폐쇄 및 탈퇴 처리를 비동기로 던지고 즉시 홈으로 이동
+    unawaited(groupNotifier.leaveGroup(groupId: widget.group.id));
+    if (context.mounted) {
+      context.go(AppRoutes.home);
+    }
   }
 }
 
@@ -552,21 +601,21 @@ class _PlayingTabViewState extends ConsumerState<_PlayingTabView> {
 
       // 내가 폭탄을 받았을 때
       if (!iHadBomb && iHaveBomb) {
-        audioSvc.changeBgmVolume(0.1); // BGM 볼륨 10%
-        audioSvc.playTicking(); // 0.7 크기로 Ticking
+        audioSvc.changeBgmVolume(0.025); // BGM 볼륨 2.5%
+        audioSvc.playTicking();
       } 
       // 내가 폭탄을 넘겼을 때 (안 가짐)
       else if (iHadBomb && !iHaveBomb) {
         audioSvc.stopTicking();
         _currentBgm = (DateTime.now().millisecondsSinceEpoch % 2 == 0) ? 'IngameBGM1.mp3' : 'IngameBGM2.mp3';
-        audioSvc.playBgm(_currentBgm, volume: 0.2);
+        audioSvc.playBgm(_currentBgm, volume: 0.05);
       }
       // 처음 진입 시 or 초기화 시 (변경 없이 폭탄이 없는 상태)
       else if (oldBomb == null && !iHaveBomb && newBomb.status == BombStatus.active) {
-        audioSvc.playBgm(_currentBgm, volume: 0.2);
+        audioSvc.playBgm(_currentBgm, volume: 0.05);
       }
       else if (oldBomb == null && iHaveBomb && newBomb.status == BombStatus.active) {
-        audioSvc.playBgm(_currentBgm, volume: 0.1);
+        audioSvc.playBgm(_currentBgm, volume: 0.025);
         audioSvc.playTicking();
       }
     });

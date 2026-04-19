@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_router.dart';
+import '../../../core/services/audio_service.dart';
 
 class GroupJoinPage extends ConsumerStatefulWidget {
   const GroupJoinPage({super.key, this.initialCode});
@@ -74,6 +75,7 @@ class _GroupJoinPageState extends ConsumerState<GroupJoinPage> {
                 onPressed: state.isLoading
                     ? null
                     : () async {
+                        ref.read(audioServiceProvider).playSfx('ButtonClickSound1.mp3');
                         final groupId = await groupCtrl.joinGroup(
                           _codeController.text.trim().toUpperCase(),
                         );

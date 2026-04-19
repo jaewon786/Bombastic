@@ -15,8 +15,8 @@ class AudioService {
   AudioService() {
     _bgmPlayer.setReleaseMode(ReleaseMode.loop);
     _tickingPlayer.setReleaseMode(ReleaseMode.loop);
-    _bgmPlayer.setVolume(0.2);
-    _tickingPlayer.setVolume(0.7);
+    _bgmPlayer.setVolume(0.05);
+    _tickingPlayer.setVolume(0.05);
   }
 
   Future<void> dispose() async {
@@ -28,7 +28,7 @@ class AudioService {
   Future<void> playSfx(String fileName) async {
     try {
       final player = AudioPlayer();
-      await player.setVolume(0.7);
+      await player.setVolume(0.05);
       await player.play(AssetSource('sounds/$fileName'));
       
       // 재생 완료 시 플레이어 자원 해제
@@ -40,9 +40,12 @@ class AudioService {
     }
   }
 
-  /// 반복되는 BGM 재생 (기본 20%)
-  Future<void> playBgm(String fileName, {double volume = 0.2}) async {
+  /// 반복되는 BGM 재생 (기본 5%)
+  Future<void> playBgm(String fileName, {double volume = 0.05}) async {
     try {
+      if (_bgmPlayer.state == PlayerState.playing) {
+        await _bgmPlayer.stop();
+      }
       await _bgmPlayer.setVolume(volume);
       await _bgmPlayer.play(AssetSource('sounds/$fileName'));
     } catch (e) {
@@ -91,7 +94,7 @@ class AudioService {
   Future<void> playTicking() async {
     try {
       if (_tickingPlayer.state != PlayerState.playing) {
-        await _tickingPlayer.setVolume(0.7);
+        await _tickingPlayer.setVolume(0.05);
         await _tickingPlayer.play(AssetSource('sounds/WatchTickingSound1.mp3'));
       }
     } catch (e) {
